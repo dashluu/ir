@@ -1,0 +1,9 @@
+package instructions;
+
+// Opcode for instructions
+public enum Opcode {
+    STORE_VAR, LOAD_VAR, LOAD_LITERAL, LOAD_DTYPE,
+    JMP_IF_FALSE, JMP,
+    BREAK_LOOP, BREAK_LOOP_FALSE, BREAK_IF_ELSE, BREAK_IF_FALSE,
+    EXIT
+}
