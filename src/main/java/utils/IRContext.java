@@ -1,11 +1,20 @@
 package utils;
 
+import cfg.CFG;
+import instructions.BasicBlock;
+import instructions.Instruction;
 import literal_refs.LiteralRefTable;
 import type_refs.TypeRefTable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class IRContext {
     private LiteralRefTable litRefTable;
     private TypeRefTable typeRefTable;
+    private final List<Instruction> instrList = new ArrayList<>();
+    private final List<BasicBlock> blockList = new ArrayList<>();
+    private final CFG cfg = new CFG();
 
     private IRContext() {
     }
@@ -28,5 +37,17 @@ public class IRContext {
 
     public TypeRefTable getTypeRefTable() {
         return typeRefTable;
+    }
+
+    public List<Instruction> getInstrList() {
+        return instrList;
+    }
+
+    public List<BasicBlock> getBlockList() {
+        return blockList;
+    }
+
+    public CFG getCfg() {
+        return cfg;
     }
 }

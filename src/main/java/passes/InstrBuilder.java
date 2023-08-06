@@ -7,32 +7,29 @@ import literal_refs.LiteralRefTable;
 import structs.IRFunction;
 import structs.IRStruct;
 import structs.IRStructType;
-import utils.IRContext;
 import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;
+import utils.IRContext;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.List;
 
 public class InstrBuilder extends ASTPass {
     private final ArrayDeque<IdRefTable> idRefTableStack = new ArrayDeque<>();
-    private List<Instruction> instrList = new ArrayList<>();
+    private List<Instruction> instrList;
     private long nextIdRef = 1, nextLitRef = 1;
-    private ArrayDeque<IRStruct> structStack;
+    private final ArrayDeque<IRStruct> structStack = new ArrayDeque<>();
 
     /**
      * Traverses an AST and builds a list of instructions from an AST in the given context.
      *
      * @param root    the input AST root.
      * @param context the input IR context.
-     * @return the constructed instruction list.
      */
-    public List<Instruction> run(ASTNode root, IRContext context) {
+    public void run(ASTNode root, IRContext context) {
         this.context = context;
-        instrList = new ArrayList<>();
-        structStack = new ArrayDeque<>();
+        instrList = context.getInstrList();
         // Set up the first identifier reference table
         IdRefTable idRefTable = new IdRefTable(null);
         idRefTableStack.push(idRefTable);
@@ -49,7 +46,6 @@ public class InstrBuilder extends ASTPass {
         // Pop everything off the stack
         idRefTableStack.pop();
         module.setEnd(currInstr());
-        return instrList;
     }
 
     private long currInstr() {

@@ -1,8 +1,8 @@
 package passes;
 
 import instructions.*;
+import utils.IRContext;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class BasicBlockBuilder implements IInstrVisitor {
@@ -13,17 +13,15 @@ public class BasicBlockBuilder implements IInstrVisitor {
     /**
      * Traverses a list of instructions and constructs a list of basic blocks.
      *
-     * @param instrList the list of instructions.
-     * @return the constructed list of basic blocks.
+     * @param context the input IR context.
      */
-    public List<BasicBlock> run(List<Instruction> instrList) {
-        blockList = new ArrayList<>();
+    public void run(IRContext context) {
+        blockList = context.getBlockList();
         block = new BasicBlock(currInstr);
         blockList.add(block);
-        for (Instruction instr : instrList) {
+        for (Instruction instr : context.getInstrList()) {
             instr.accept(this);
         }
-        return blockList;
     }
 
     private void createBasicBlock() {
@@ -33,32 +31,33 @@ public class BasicBlockBuilder implements IInstrVisitor {
         }
     }
 
-    private void addInstr(Instruction instr) {
+    private void addInstrToBasicBlock(Instruction instr) {
         block.addInstr(instr);
+        instr.setBlock(block);
         currInstr++;
     }
 
     @Override
     public Instruction visitUnOpInstr(UnOpInstr unOpInstr) {
-        addInstr(unOpInstr);
+        addInstrToBasicBlock(unOpInstr);
         return unOpInstr;
     }
 
     @Override
     public Instruction visitBinOpInstr(BinOpInstr binOpInstr) {
-        addInstr(binOpInstr);
+        addInstrToBasicBlock(binOpInstr);
         return binOpInstr;
     }
 
     @Override
     public Instruction visitCallInstr(CallInstr callInstr) {
-        addInstr(callInstr);
+        addInstrToBasicBlock(callInstr);
         return callInstr;
     }
 
     @Override
     public Instruction visitJmpInstr(JmpInstr jmpInstr) {
-        addInstr(jmpInstr);
+        addInstrToBasicBlock(jmpInstr);
         createBasicBlock();
         return jmpInstr;
     }
@@ -66,20 +65,20 @@ public class BasicBlockBuilder implements IInstrVisitor {
     @Override
     public Instruction visitBreakInstr(BreakInstr breakInstr) {
         // Break instructions will not be encountered in this pass
-        addInstr(breakInstr);
+        addInstrToBasicBlock(breakInstr);
         return breakInstr;
     }
 
     @Override
     public Instruction visitContInstr(ContInstr contInstr) {
         // Continue instructions will not be encountered in this pass
-        addInstr(contInstr);
+        addInstrToBasicBlock(contInstr);
         return contInstr;
     }
 
     @Override
     public Instruction visitRetInstr(RetInstr retInstr) {
-        addInstr(retInstr);
+        addInstrToBasicBlock(retInstr);
         createBasicBlock();
         return retInstr;
     }
@@ -87,32 +86,32 @@ public class BasicBlockBuilder implements IInstrVisitor {
     @Override
     public Instruction visitPushFunInstr(PushFunInstr pushFunInstr) {
         createBasicBlock();
-        addInstr(pushFunInstr);
+        addInstrToBasicBlock(pushFunInstr);
         return pushFunInstr;
     }
 
     @Override
     public Instruction visitPopFunInstr(PopFunInstr popFunInstr) {
-        addInstr(popFunInstr);
+        addInstrToBasicBlock(popFunInstr);
         createBasicBlock();
         return popFunInstr;
     }
 
     @Override
     public Instruction visitLoadInstr(LoadInstr loadInstr) {
-        addInstr(loadInstr);
+        addInstrToBasicBlock(loadInstr);
         return loadInstr;
     }
 
     @Override
     public Instruction visitStoreInstr(StoreInstr storeInstr) {
-        addInstr(storeInstr);
+        addInstrToBasicBlock(storeInstr);
         return storeInstr;
     }
 
     @Override
     public Instruction visitExitInstr(ExitInstr exitInstr) {
-        addInstr(exitInstr);
+        addInstrToBasicBlock(exitInstr);
         return exitInstr;
     }
 }

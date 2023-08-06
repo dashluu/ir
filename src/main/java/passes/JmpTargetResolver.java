@@ -3,27 +3,24 @@ package passes;
 import instructions.*;
 import structs.IRStruct;
 import structs.IRStructType;
+import utils.IRContext;
 
-import java.util.List;
 import java.util.ListIterator;
 
 public class JmpTargetResolver implements IInstrVisitor {
     /**
      * Traverses a list of instructions and resolves any jump target.
      *
-     * @param instrList the list of instructions.
-     * @return the processed list of instructions.
+     * @param context the input IR context.
      */
-    public List<Instruction> run(List<Instruction> instrList) {
-        ListIterator<Instruction> instrIter = instrList.listIterator();
+    public void run(IRContext context) {
+        ListIterator<Instruction> instrIter = context.getInstrList().listIterator();
         Instruction instr;
 
         while (instrIter.hasNext()) {
             instr = instrIter.next().accept(this);
             instrIter.set(instr);
         }
-
-        return instrList;
     }
 
     @Override

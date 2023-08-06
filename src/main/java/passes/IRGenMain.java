@@ -65,11 +65,13 @@ public class IRGenMain {
             BasicBlockBuilder basicBlockBuilder = new BasicBlockBuilder();
             IRContext irContext = IRContext.createContext();
 
-            List<Instruction> instrList = instrBuilder.run(moduleNode, irContext);
-            instrList = jmpTargetResolver.run(instrList);
+            instrBuilder.run(moduleNode, irContext);
+            List<Instruction> instrList = irContext.getInstrList();
+            jmpTargetResolver.run(irContext);
             dumpInstrList(instrWriter, instrList);
 
-            List<BasicBlock> blockList = basicBlockBuilder.run(instrList);
+            basicBlockBuilder.run(irContext);
+            List<BasicBlock> blockList = irContext.getBlockList();
             dumpBasicBlockList(blockWriter, blockList);
         } catch (SyntaxErr | IOException e) {
             e.printStackTrace();

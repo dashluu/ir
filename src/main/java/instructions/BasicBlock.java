@@ -1,5 +1,7 @@
 package instructions;
 
+import cfg.CFGNode;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.ListIterator;
 public class BasicBlock implements Iterable<Instruction> {
     private long id;
     private final List<Instruction> instrList = new ArrayList<>();
+    private CFGNode cfgNode;
 
     public BasicBlock(long id) {
         this.id = id;
@@ -21,6 +24,14 @@ public class BasicBlock implements Iterable<Instruction> {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public CFGNode getCfgNode() {
+        return cfgNode;
+    }
+
+    public void setCfgNode(CFGNode cfgNode) {
+        this.cfgNode = cfgNode;
     }
 
     /**
