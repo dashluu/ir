@@ -90,7 +90,8 @@ jump instructions. The architecture is as follows:
   containing CFG node(mentioned below). Note that unlike LLVM, a basic block does not have any reference to a function
   or module.
 * `IRStruct`: the base class for any IR structures. An IR structure can be a module, a function, a loop statement,
-  an if-else sequence, or an if statement.
+  an if-else sequence, or an if statement. Each IR structure does not have any other references other than one to its
+  container, which is another `IRStruct` object.
 
 Currently, the IR hierarchy is shown below:
 
