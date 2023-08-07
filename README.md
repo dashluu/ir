@@ -86,11 +86,10 @@ jump instructions. The architecture is as follows:
   `CallInstr` for binary instructions and calling functions respectively. Each instruction has a reference to the
   containing basic block and IR structure.
 * `BasicBlock`: represents a basic block which is a sequence of instructions such that there is no branching except for
-  the last instruction or that the first instruction is a target for jumps. A basic block has a reference to the
-  containing CFG node(mentioned below). Note that unlike LLVM, a basic block does not have any reference to a function
-  or module.
+  the last instruction or that the first instruction is a target for jumps. Note that unlike LLVM, a basic block does
+  not have any reference to a function or module.
 * `IRStruct`: the base class for any IR structures. An IR structure can be a module, a function, a loop statement,
-  an if-else sequence, or an if statement. Each IR structure does not have any other references other than one to its
+  an if-else sequence, or an if statement. Each IR structure does not have any references other than one to its
   container, which is another `IRStruct` object.
 
 Currently, the IR hierarchy is shown below:
@@ -103,8 +102,8 @@ The CFG is used to do code analysis and optimizes it by feeding it through passe
 structures are:
 
 * `CFG`: represents a CFG.
-* `CFGNode`: a node in the CFG that holds a reference to a basic block.
-* `CFGEdge`: an edge in the CFG that connects two nodes.
+* `BasicBlock`: can be considered as a node in CFG. The properties of a basic block are mentioned above.
+* `CFGEdge`: an edge in the CFG that connects two basic blocks.
 * Using the constructed CFG, we can examine the flow of the program and look for optimization opportunities, for
   example, whether a function recursion is present.
 
@@ -114,8 +113,7 @@ A pass can be thought as an object that processes the code. The current passes a
 
 * `InstrBuilder`: constructs a list of instructions by traversing the AST.
 * `JmpTargetResolver`: resolves any jump target by using the generated hierarchy from the previous pass.
-* `BasicBlockBuilder`: builds a list of basic blocks from the constructed list of instructions.
-* `CFGBuilder`: builds a CFG from the constructed list of basic blocks. This is still being implemented.
+* `BasicBlockBuilder`: builds a list of basic blocks for the CFG from the constructed list of instructions.
 
 ## Other projects
 
