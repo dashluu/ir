@@ -25,7 +25,7 @@ public class IRGenMain {
 
     private static void dumpBasicBlockList(Writer writer, List<BasicBlock> blockList) throws IOException {
         for (BasicBlock block : blockList) {
-            writer.write(Long.toString(block.getId()) + ":" + System.lineSeparator());
+            writer.write(block.getId() + ":" + System.lineSeparator());
             for (Instruction instr : block) {
                 writer.write(instr.toString());
                 writer.write(System.lineSeparator());
