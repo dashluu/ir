@@ -4,13 +4,18 @@ import cfg.CFG;
 import cfg.CFGEdge;
 import cfg.CFGNode;
 import instructions.*;
+import structs.IRFunction;
 import structs.IRStruct;
 import utils.IRContext;
 
+import java.util.ArrayDeque;
+
+// This is incomplete
 public class CFGBuilder implements IInstrVisitor {
     private IRContext context;
     private CFG cfg;
     private CFGNode currCFGNode;
+    private ArrayDeque<IRFunction> funStack;
 
     public CFG run(IRContext context) {
         this.context = context;
@@ -82,23 +87,18 @@ public class CFGBuilder implements IInstrVisitor {
 
     @Override
     public Instruction visitRetInstr(RetInstr retInstr) {
-        return null;
+        return retInstr;
     }
 
     @Override
     public Instruction visitPushFunInstr(PushFunInstr pushFunInstr) {
         IRStruct function = pushFunInstr.getContainer();
-        long end = function.getEnd();
-        Instruction instr = context.getInstrList().get((int) end);
-        BasicBlock block = instr.getBlock();
-        long destId = block.getId();
+        long funEnd = function.getEnd();
+        Instruction instrAfterFun = context.getInstrList().get((int) funEnd);
+        BasicBlock blockAfterFun = instrAfterFun.getBlock();
+        long destId = blockAfterFun.getId();
         createCFGEdge(destId);
         return pushFunInstr;
-    }
-
-    @Override
-    public Instruction visitPopFunInstr(PopFunInstr popFunInstr) {
-        return popFunInstr;
     }
 
     @Override

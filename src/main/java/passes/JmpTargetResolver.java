@@ -48,39 +48,39 @@ public class JmpTargetResolver implements IInstrVisitor {
         Opcode opcode = breakInstr.getOpcode();
         long targetId;
         Instruction instr;
-        IRStruct container;
+        IRStruct upStruct;
 
         switch (opcode) {
             case BREAK_LOOP -> {
-                for (container = breakInstr.getContainer();
-                     container.getStructType() != IRStructType.LOOP;
-                     container = container.getParent())
+                for (upStruct = breakInstr.getContainer();
+                     upStruct.getStructType() != IRStructType.LOOP;
+                     upStruct = upStruct.getParent())
                     ;
-                targetId = container.getEnd();
+                targetId = upStruct.getEnd();
                 instr = new JmpInstr(Opcode.JMP, targetId);
             }
             case BREAK_IF_ELSE -> {
-                for (container = breakInstr.getContainer();
-                     container.getStructType() != IRStructType.IF_ELSE;
-                     container = container.getParent())
+                for (upStruct = breakInstr.getContainer();
+                     upStruct.getStructType() != IRStructType.IF_ELSE;
+                     upStruct = upStruct.getParent())
                     ;
-                targetId = container.getEnd();
+                targetId = upStruct.getEnd();
                 instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetId);
             }
             case BREAK_LOOP_FALSE -> {
-                for (container = breakInstr.getContainer();
-                     container.getStructType() != IRStructType.LOOP;
-                     container = container.getParent())
+                for (upStruct = breakInstr.getContainer();
+                     upStruct.getStructType() != IRStructType.LOOP;
+                     upStruct = upStruct.getParent())
                     ;
-                targetId = container.getEnd();
+                targetId = upStruct.getEnd();
                 instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetId);
             }
             default -> {
-                for (container = breakInstr.getContainer();
-                     container.getStructType() != IRStructType.IF;
-                     container = container.getParent())
+                for (upStruct = breakInstr.getContainer();
+                     upStruct.getStructType() != IRStructType.IF;
+                     upStruct = upStruct.getParent())
                     ;
-                targetId = container.getEnd();
+                targetId = upStruct.getEnd();
                 instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetId);
             }
         }
@@ -90,12 +90,12 @@ public class JmpTargetResolver implements IInstrVisitor {
 
     @Override
     public Instruction visitContInstr(ContInstr contInstr) {
-        IRStruct container;
-        for (container = contInstr.getContainer();
-             container.getStructType() != IRStructType.LOOP;
-             container = container.getParent())
+        IRStruct upStruct;
+        for (upStruct = contInstr.getContainer();
+             upStruct.getStructType() != IRStructType.LOOP;
+             upStruct = upStruct.getParent())
             ;
-        long targetId = container.getStart();
+        long targetId = upStruct.getStart();
         return new JmpInstr(Opcode.JMP, targetId);
     }
 
@@ -117,11 +117,6 @@ public class JmpTargetResolver implements IInstrVisitor {
     @Override
     public Instruction visitPushFunInstr(PushFunInstr pushFunInstr) {
         return pushFunInstr;
-    }
-
-    @Override
-    public Instruction visitPopFunInstr(PopFunInstr popFunInstr) {
-        return popFunInstr;
     }
 
     @Override

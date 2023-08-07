@@ -17,8 +17,6 @@ public interface IInstrVisitor {
 
     Instruction visitPushFunInstr(PushFunInstr pushFunInstr);
 
-    Instruction visitPopFunInstr(PopFunInstr popFunInstr);
-
     Instruction visitLoadInstr(LoadInstr loadInstr);
 
     Instruction visitStoreInstr(StoreInstr storeInstr);

@@ -18,7 +18,7 @@ import java.util.List;
 public class InstrBuilder extends ASTPass {
     private final ArrayDeque<IdRefTable> idRefTableStack = new ArrayDeque<>();
     private List<Instruction> instrList;
-    private long nextIdRef = 1, nextLitRef = 1;
+    private long nextIdRef = 0, nextLitRef = 0;
     private final ArrayDeque<IRStruct> structStack = new ArrayDeque<>();
 
     /**
@@ -40,22 +40,22 @@ public class InstrBuilder extends ASTPass {
         root.accept(this);
         // Insert an exit instruction at the end
         Instruction instr = new ExitInstr();
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
         // Exit module
         structStack.pop();
+        module.setEnd(currInstr());
         // Pop everything off the stack
         idRefTableStack.pop();
-        module.setEnd(currInstr());
     }
 
     private long currInstr() {
         return instrList.size() + 1;
     }
 
-    private void updateAndAddInstr(Instruction instr) {
-        instrList.add(instr);
+    private void updateContainerAndAddInstr(Instruction instr) {
         IRStruct struct = structStack.peek();
         instr.setContainer(struct);
+        instrList.add(instr);
     }
 
     private void storeVar(ASTNode idNode) {
@@ -64,7 +64,7 @@ public class InstrBuilder extends ASTPass {
         assert idRefTable != null;
         long destRef = idRefTable.getClosureIdRef(destName);
         Instruction instr = new StoreInstr(Opcode.STORE_VAR, destName, destRef);
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class InstrBuilder extends ASTPass {
         assert idRefTable != null;
         long srcRef = idRefTable.getClosureIdRef(src);
         Instruction instr = new LoadInstr(Opcode.LOAD_VAR, src, srcRef);
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
         return node;
     }
 
@@ -120,7 +120,7 @@ public class InstrBuilder extends ASTPass {
         }
 
         Instruction instr = new LoadInstr(Opcode.LOAD_LITERAL, litVal, litRef);
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
         return node;
     }
 
@@ -129,7 +129,7 @@ public class InstrBuilder extends ASTPass {
         String src = node.getTok().getVal();
         long srcRef = context.getTypeRefTable().getTypeRef(src);
         Instruction instr = new LoadInstr(Opcode.LOAD_DTYPE, src, srcRef);
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
         return node;
     }
 
@@ -138,9 +138,9 @@ public class InstrBuilder extends ASTPass {
         ASTNode unOpNode = super.visitUnOp(node);
         Tok opTok = unOpNode.getTok();
         String opName = opTok.getVal();
-        long opRef = opTok.getType().ordinal();
+        long opRef = opTok.getTokType().ordinal();
         Instruction instr = new UnOpInstr(opName, opRef);
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
         return unOpNode;
     }
 
@@ -149,7 +149,7 @@ public class InstrBuilder extends ASTPass {
         BinOpASTNode binOpNode = (BinOpASTNode) node;
         ASTNode left = binOpNode.getLeft();
         Tok opTok = binOpNode.getTok();
-        TokType opId = opTok.getType();
+        TokType opId = opTok.getTokType();
 
         if (opId == TokType.ASSIGNMENT && left.getNodeType() == ASTNodeType.ID) {
             ASTNode right = binOpNode.getRight().accept(this);
@@ -160,7 +160,7 @@ public class InstrBuilder extends ASTPass {
             String opName = opTok.getVal();
             long opRef = opId.ordinal();
             Instruction instr = new BinOpInstr(opName, opRef);
-            updateAndAddInstr(instr);
+            updateContainerAndAddInstr(instr);
         }
 
         return binOpNode;
@@ -177,7 +177,7 @@ public class InstrBuilder extends ASTPass {
         assert idRefTable != null;
         long calleeId = idRefTable.getClosureIdRef(calleeName);
         Instruction instr = new CallInstr(calleeName, calleeId);
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
         return funCallNode;
     }
 
@@ -195,7 +195,7 @@ public class InstrBuilder extends ASTPass {
         String funId = idNode.getTok().getVal();
         long funRef = currInstr();
         Instruction instr = new PushFunInstr(funId, funRef);
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
 
         // Register function in the identifier reference table
         IdRefTable topIdRefTable = idRefTableStack.peek();
@@ -209,10 +209,6 @@ public class InstrBuilder extends ASTPass {
         funDefNode.setSignNode(funSignNode);
         funDefNode.setBodyNode(bodyNode);
         idRefTableStack.pop();
-
-        // Add an instruction to mark end of function
-        instr = new PopFunInstr();
-        updateAndAddInstr(instr);
 
         // Exit function
         structStack.pop();
@@ -233,21 +229,21 @@ public class InstrBuilder extends ASTPass {
     public ASTNode visitRet(ASTNode node) {
         ASTNode retNode = super.visitRet(node);
         Instruction instr = new RetInstr();
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
         return retNode;
     }
 
     @Override
     public ASTNode visitBreak(ASTNode node) {
         Instruction instr = new BreakInstr(Opcode.BREAK_LOOP);
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
         return node;
     }
 
     @Override
     public ASTNode visitCont(ASTNode node) {
         Instruction instr = new ContInstr();
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
         return node;
     }
 
@@ -289,13 +285,13 @@ public class InstrBuilder extends ASTPass {
         ifNode.setCondNode(condNode);
         // Add a conditional jump before the body
         Instruction instr = new BreakInstr(Opcode.BREAK_IF_FALSE);
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
         // Visit the body node
         ScopeASTNode bodyNode = (ScopeASTNode) ifNode.getBodyNode().accept(this);
         ifNode.setBodyNode(bodyNode);
         // Insert an instruction to jump out of the if-else sequence
         instr = new BreakInstr(Opcode.BREAK_IF_ELSE);
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
 
         // Exit if-block
         structStack.pop();
@@ -316,13 +312,13 @@ public class InstrBuilder extends ASTPass {
         whileNode.setCondNode(condNode);
         // Conditional jump if the condition isn't met
         Instruction instr = new BreakInstr(Opcode.BREAK_LOOP_FALSE);
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
         // Visit the body node
         ScopeASTNode bodyNode = (ScopeASTNode) whileNode.getBodyNode().accept(this);
         whileNode.setBodyNode(bodyNode);
         // Unconditional jump to the beginning of the while statement
         instr = new ContInstr();
-        updateAndAddInstr(instr);
+        updateContainerAndAddInstr(instr);
 
         // Exit while-block
         structStack.pop();

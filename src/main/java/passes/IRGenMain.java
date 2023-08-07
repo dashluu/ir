@@ -6,10 +6,11 @@ import instructions.BasicBlock;
 import instructions.Instruction;
 import lexers.LexReader;
 import parsers.module.ModuleParser;
+import parsers.scope.ScopeType;
 import parsers.utils.ParseContext;
 import parsers.utils.ParseResult;
-import parsers.utils.Scope;
-import parsers.utils.ScopeStack;
+import parsers.scope.Scope;
+import parsers.scope.ScopeStack;
 import utils.IRContext;
 
 import java.io.*;
@@ -49,7 +50,7 @@ public class IRGenMain {
             moduleParser.init();
 
             ParseContext parseContext = ParseContext.createContext();
-            Scope globalScope = new Scope(null);
+            Scope globalScope = new Scope(ScopeType.MODULE, null);
             ScopeStack scopeStack = parseContext.getScopeStack();
             scopeStack.push(globalScope);
             ParseResult<ASTNode> moduleResult = moduleParser.parseModule(parseContext);

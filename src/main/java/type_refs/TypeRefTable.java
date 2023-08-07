@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 public class TypeRefTable {
     private final HashMap<String, Byte> typeRefMap = new HashMap<>();
-    private byte nextDtypeRef = 1;
+    private byte nextDtypeRef = 0;
 
     /**
      * Creates an instance of TypeRefTable and initializes it.
