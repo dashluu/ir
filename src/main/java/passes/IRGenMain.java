@@ -72,7 +72,7 @@ public class IRGenMain {
             dumpInstrList(instrWriter, instrList);
 
             basicBlockBuilder.run(irContext);
-            List<BasicBlock> blockList = irContext.getBlockList();
+            List<BasicBlock> blockList = irContext.getBasicBlockList();
             dumpBasicBlockList(blockWriter, blockList);
         } catch (SyntaxErr | IOException e) {
             e.printStackTrace();

@@ -16,7 +16,7 @@ public class BasicBlockBuilder implements IInstrVisitor {
      * @param context the input IR context.
      */
     public void run(IRContext context) {
-        blockList = context.getBlockList();
+        blockList = context.getBasicBlockList();
         block = new BasicBlock(currBlock++);
         blockList.add(block);
         for (Instruction instr : context.getInstrList()) {

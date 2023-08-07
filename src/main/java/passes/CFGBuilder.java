@@ -27,7 +27,7 @@ public class CFGBuilder implements IInstrVisitor {
 
     private void initCFGNodes() {
         CFGNode cfgNode;
-        for (BasicBlock block : context.getBlockList()) {
+        for (BasicBlock block : context.getBasicBlockList()) {
             cfgNode = new CFGNode(block);
             block.setCfgNode(cfgNode);
             cfg.addNode(cfgNode);

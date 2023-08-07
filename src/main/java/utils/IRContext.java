@@ -43,7 +43,7 @@ public class IRContext {
         return instrList;
     }
 
-    public List<BasicBlock> getBlockList() {
+    public List<BasicBlock> getBasicBlockList() {
         return blockList;
     }
 
