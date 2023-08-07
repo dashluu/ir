@@ -23,16 +23,4 @@ public class IRDumper {
 
         writer.write(strBuff.toString());
     }
-
-    public static void dumpInstrList(IRContext context, Writer writer) throws IOException {
-        int currInstr = 0;
-        StringBuilder strBuff = new StringBuilder();
-
-        for (Instruction instr : context.getInstrList()) {
-            strBuff.append(currInstr).append(": ").append(instr).append(System.lineSeparator());
-            ++currInstr;
-        }
-
-        writer.write(strBuff.toString());
-    }
 }

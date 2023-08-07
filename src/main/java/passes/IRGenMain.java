@@ -42,16 +42,12 @@ public class IRGenMain {
             }
 
             ASTNode moduleNode = moduleResult.getData();
-            InstrBuilder instrBuilder = new InstrBuilder();
+            BasicBlockBuilder blockBuilder = new BasicBlockBuilder();
             JmpTargetResolver jmpTargetResolver = new JmpTargetResolver();
-            BasicBlockBuilder basicBlockBuilder = new BasicBlockBuilder();
             IRContext irContext = IRContext.createContext();
 
-            instrBuilder.run(moduleNode, irContext);
+            blockBuilder.run(moduleNode, irContext);
             jmpTargetResolver.run(irContext);
-            IRDumper.dumpInstrList(irContext, instrWriter);
-
-            basicBlockBuilder.run(irContext);
             IRDumper.dumpCFG(irContext, cfgWriter);
         } catch (SyntaxErr | IOException e) {
             e.printStackTrace();

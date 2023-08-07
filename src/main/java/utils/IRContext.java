@@ -11,7 +11,6 @@ import java.util.List;
 public class IRContext {
     private LiteralRefTable litRefTable;
     private TypeRefTable typeRefTable;
-    private final List<Instruction> instrList = new ArrayList<>();
     private final CFG cfg = new CFG();
 
     private IRContext() {
@@ -35,10 +34,6 @@ public class IRContext {
 
     public TypeRefTable getTypeRefTable() {
         return typeRefTable;
-    }
-
-    public List<Instruction> getInstrList() {
-        return instrList;
     }
 
     public CFG getCfg() {

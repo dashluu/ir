@@ -1,5 +1,8 @@
 package passes;
 
+import cfg.BasicBlock;
+import cfg.CFG;
+import cfg.ICFGVisitor;
 import instructions.*;
 import structs.IRStruct;
 import structs.IRStructType;
@@ -7,20 +10,48 @@ import utils.IRContext;
 
 import java.util.ListIterator;
 
-public class JmpTargetResolver implements IInstrVisitor {
+public class JmpTargetResolver implements ICFGVisitor {
     /**
-     * Traverses a list of instructions and resolves any jump target.
+     * Visits instructions in the given context's CFG and resolves jump targets.
      *
      * @param context the input IR context.
      */
     public void run(IRContext context) {
-        ListIterator<Instruction> instrIter = context.getInstrList().listIterator();
+        CFG cfg = context.getCfg();
+        cfg.accept(this);
+    }
+
+    @Override
+    public void visitCFG(CFG cfg) {
+        ListIterator<BasicBlock> blockIter = cfg.listIterator();
+        BasicBlock block;
+
+        while (blockIter.hasNext()) {
+            block = blockIter.next().accept(this);
+            if (block == null) {
+                blockIter.remove();
+            } else {
+                blockIter.set(block);
+            }
+        }
+    }
+
+    @Override
+    public BasicBlock visitBasicBlock(BasicBlock block) {
+        ListIterator<Instruction> instrIter = block.listIterator();
         Instruction instr;
 
         while (instrIter.hasNext()) {
             instr = instrIter.next().accept(this);
-            instrIter.set(instr);
+            if (instr == null) {
+                instrIter.remove();
+            } else {
+                instrIter.set(instr);
+            }
         }
+
+        // Remove basic block if it is empty
+        return block.isEmpty() ? null : block;
     }
 
     @Override
@@ -115,8 +146,13 @@ public class JmpTargetResolver implements IInstrVisitor {
     }
 
     @Override
-    public Instruction visitPushFunInstr(PushFunInstr pushFunInstr) {
-        return pushFunInstr;
+    public Instruction visitPushInstr(PushInstr pushInstr) {
+        IRStruct upStruct;
+        for (upStruct = pushInstr.getContainer(); upStruct != null; upStruct = upStruct.getParent()) {
+            upStruct.setEnd(upStruct.getEnd() - 1);
+        }
+        // Remove push instructions
+        return null;
     }
 
     @Override
