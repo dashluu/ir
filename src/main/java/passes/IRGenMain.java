@@ -2,8 +2,6 @@ package passes;
 
 import ast.ASTNode;
 import exceptions.SyntaxErr;
-import instructions.BasicBlock;
-import instructions.Instruction;
 import lexers.LexReader;
 import parsers.module.ModuleParser;
 import parsers.scope.ScopeType;
@@ -14,37 +12,20 @@ import parsers.scope.ScopeStack;
 import utils.IRContext;
 
 import java.io.*;
-import java.util.List;
 
 public class IRGenMain {
-    private static void dumpInstrList(Writer writer, List<Instruction> instrList) throws IOException {
-        for (Instruction instr : instrList) {
-            writer.write(instr.toString() + System.lineSeparator());
-        }
-    }
-
-    private static void dumpBasicBlockList(Writer writer, List<BasicBlock> blockList) throws IOException {
-        for (BasicBlock block : blockList) {
-            writer.write(block.getId() + ":" + System.lineSeparator());
-            for (Instruction instr : block) {
-                writer.write(instr.toString());
-                writer.write(System.lineSeparator());
-            }
-        }
-    }
-
     public static void main(String[] args) {
         String inFilename = args[0];
         String instrOutFilename = args[1];
-        String blockOutFilename = args[2];
+        String cfgOutFilename = args[2];
         Reader reader = null;
         Writer instrWriter = null;
-        Writer blockWriter = null;
+        Writer cfgWriter = null;
 
         try {
             reader = new BufferedReader(new FileReader(inFilename));
             instrWriter = new BufferedWriter(new FileWriter(instrOutFilename));
-            blockWriter = new BufferedWriter(new FileWriter(blockOutFilename));
+            cfgWriter = new BufferedWriter(new FileWriter(cfgOutFilename));
             LexReader lexReader = new LexReader(reader);
             ModuleParser moduleParser = new ModuleParser(lexReader);
             moduleParser.init();
@@ -67,13 +48,11 @@ public class IRGenMain {
             IRContext irContext = IRContext.createContext();
 
             instrBuilder.run(moduleNode, irContext);
-            List<Instruction> instrList = irContext.getInstrList();
             jmpTargetResolver.run(irContext);
-            dumpInstrList(instrWriter, instrList);
+            IRDumper.dumpInstrList(irContext, instrWriter);
 
             basicBlockBuilder.run(irContext);
-            List<BasicBlock> blockList = irContext.getBasicBlockList();
-            dumpBasicBlockList(blockWriter, blockList);
+            IRDumper.dumpCFG(irContext, cfgWriter);
         } catch (SyntaxErr | IOException e) {
             e.printStackTrace();
         } finally {
@@ -84,8 +63,8 @@ public class IRGenMain {
                 if (instrWriter != null) {
                     instrWriter.close();
                 }
-                if (blockWriter != null) {
-                    blockWriter.close();
+                if (cfgWriter != null) {
+                    cfgWriter.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();

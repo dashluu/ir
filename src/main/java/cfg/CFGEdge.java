@@ -1,19 +1,19 @@
 package cfg;
 
 public class CFGEdge {
-    private final CFGNode src;
-    private final CFGNode dest;
+    private final BasicBlock src;
+    private final BasicBlock dest;
 
-    public CFGEdge(CFGNode src, CFGNode dest) {
+    public CFGEdge(BasicBlock src, BasicBlock dest) {
         this.src = src;
         this.dest = dest;
     }
 
-    public CFGNode getSrc() {
+    public BasicBlock getSrc() {
         return src;
     }
 
-    public CFGNode getDest() {
+    public BasicBlock getDest() {
         return dest;
     }
 }

@@ -1,23 +1,20 @@
 package cfg;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 // Control-flow graph
-public class CFG implements Iterable<CFGNode> {
-    private final HashMap<Long, CFGNode> nodeMap = new HashMap<>();
-    private final List<CFGNode> nodeList = new ArrayList<>();
+public class CFG implements Iterable<BasicBlock> {
+    private final HashMap<Long, BasicBlock> blockMap = new HashMap<>();
+    private final List<BasicBlock> blockList = new ArrayList<>();
 
     /**
-     * Adds a new node to the graph.
+     * Adds a new basic block to the graph.
      *
-     * @param node the node to be added.
+     * @param block the basic block to be added.
      */
-    public void addNode(CFGNode node) {
-        nodeMap.put(node.getId(), node);
-        nodeList.add(node);
+    public void addBasicBlock(BasicBlock block) {
+        blockMap.put(block.getId(), block);
+        blockList.add(block);
     }
 
     /**
@@ -26,25 +23,29 @@ public class CFG implements Iterable<CFGNode> {
      * @param edge the edge to be added.
      */
     public void addEdge(CFGEdge edge) {
-        CFGNode src = edge.getSrc();
-        CFGNode dest = edge.getDest();
+        BasicBlock src = edge.getSrc();
+        BasicBlock dest = edge.getDest();
         src.addSuccEdge(edge);
         dest.addPredEdge(edge);
     }
 
     /**
-     * Gets a CFG node based on its identifier.
+     * Gets a basic block based on its identifier.
      *
-     * @param id an integer as the identifier of a CFG node.
-     * @return a CFG node.
+     * @param id an integer as the identifier of a basic block.
+     * @return a basic block.
      */
-    public CFGNode getNode(long id) {
-        return nodeMap.get(id);
+    public BasicBlock getBasicBlock(long id) {
+        return blockMap.get(id);
     }
 
     @Override
-    public Iterator<CFGNode> iterator() {
-        return nodeList.iterator();
+    public Iterator<BasicBlock> iterator() {
+        return blockList.iterator();
+    }
+
+    public ListIterator<BasicBlock> listIterator() {
+        return blockList.listIterator();
     }
 
     public void accept(ICFGVisitor cfgVisitor) {

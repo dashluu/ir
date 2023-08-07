@@ -1,5 +1,6 @@
 package instructions;
 
+import cfg.BasicBlock;
 import structs.IRStruct;
 
 // A class whose instances represent IR instructions

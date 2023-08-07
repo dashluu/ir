@@ -49,7 +49,7 @@ public class InstrBuilder extends ASTPass {
     }
 
     private long currInstr() {
-        return instrList.size() + 1;
+        return instrList.size();
     }
 
     private void updateContainerAndAddInstr(Instruction instr) {

@@ -1,24 +1,24 @@
 package passes;
 
+import cfg.BasicBlock;
+import cfg.CFG;
 import instructions.*;
 import utils.IRContext;
 
-import java.util.List;
-
 public class BasicBlockBuilder implements IInstrVisitor {
     private BasicBlock block;
-    private List<BasicBlock> blockList;
+    private CFG cfg;
     private long currBlock = 0;
 
     /**
-     * Traverses a list of instructions and constructs a list of basic blocks.
+     * Traverses a list of instructions and constructs a list of basic blocks for the given context's CFG.
      *
      * @param context the input IR context.
      */
     public void run(IRContext context) {
-        blockList = context.getBasicBlockList();
+        cfg = context.getCfg();
         block = new BasicBlock(currBlock++);
-        blockList.add(block);
+        cfg.addBasicBlock(block);
         for (Instruction instr : context.getInstrList()) {
             instr.accept(this);
         }
@@ -27,7 +27,7 @@ public class BasicBlockBuilder implements IInstrVisitor {
     private void createBlock() {
         if (!block.isEmpty()) {
             block = new BasicBlock(currBlock++);
-            blockList.add(block);
+            cfg.addBasicBlock(block);
         }
     }
 

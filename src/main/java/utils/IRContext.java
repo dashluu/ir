@@ -1,7 +1,6 @@
 package utils;
 
 import cfg.CFG;
-import instructions.BasicBlock;
 import instructions.Instruction;
 import literal_refs.LiteralRefTable;
 import type_refs.TypeRefTable;
@@ -13,7 +12,6 @@ public class IRContext {
     private LiteralRefTable litRefTable;
     private TypeRefTable typeRefTable;
     private final List<Instruction> instrList = new ArrayList<>();
-    private final List<BasicBlock> blockList = new ArrayList<>();
     private final CFG cfg = new CFG();
 
     private IRContext() {
@@ -41,10 +39,6 @@ public class IRContext {
 
     public List<Instruction> getInstrList() {
         return instrList;
-    }
-
-    public List<BasicBlock> getBasicBlockList() {
-        return blockList;
     }
 
     public CFG getCfg() {
