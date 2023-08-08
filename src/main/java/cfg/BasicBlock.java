@@ -1,62 +1,47 @@
 package cfg;
 
+import instructions.IInstrIterator;
 import instructions.Instruction;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 // A vector of sequential instructions without branching(except possibly for the last instruction)
-// Uses the iterator pattern
 public class BasicBlock implements Iterable<Instruction> {
-    private class InstrIterator implements ICFGElementIterator<Instruction> {
-        private Instruction currInstr;
-
-        public InstrIterator() {
-            currInstr = headInstr;
-        }
+    private class InstrIterator implements IInstrIterator {
+        private int i = 0;
 
         @Override
         public boolean hasNext() {
-            return currInstr != null;
+            return i < instrList.size();
         }
 
         @Override
         public Instruction next() {
-            Instruction tmpInstr = currInstr;
-            currInstr = currInstr.getNextInstr();
-            return tmpInstr;
+            return instrList.get(i++);
         }
 
         @Override
-        public void set(Instruction elm) {
+        public void set(Instruction instr) {
+            // Update the current instruction
+            Instruction currInstr = instrList.get(i - 1);
+            instrList.set(i - 1, instr);
+            // Update the previous and next instruction
             Instruction prevInstr = currInstr.getPrevInstr();
             Instruction nextInstr = currInstr.getNextInstr();
-            prevInstr.setNextInstr(elm);
-            elm.setPrevInstr(prevInstr);
-            nextInstr.setPrevInstr(elm);
-            elm.setNextInstr(nextInstr);
-        }
-
-        @Override
-        public void add(Instruction elm) {
-            Instruction prevInstr = currInstr.getPrevInstr();
-            prevInstr.setNextInstr(elm);
-            elm.setPrevInstr(prevInstr);
-            currInstr.setPrevInstr(elm);
-            elm.setNextInstr(currInstr);
-        }
-
-        @Override
-        public void remove(Instruction elm) {
-
+            instr.setPrevInstr(prevInstr);
+            instr.setNextInstr(nextInstr);
+            if (prevInstr != null) {
+                prevInstr.setNextInstr(instr);
+            }
+            if (nextInstr != null) {
+                nextInstr.setPrevInstr(instr);
+            }
         }
     }
 
     private final long id;
-    private Instruction headInstr;
-    private Instruction tailInstr;
     private final List<Instruction> instrList = new ArrayList<>();
     // A list of successor edges(or outgoing edges)
     private final List<CFGEdge> succEdgeList = new ArrayList<>();
@@ -109,51 +94,24 @@ public class BasicBlock implements Iterable<Instruction> {
         predEdgeList.add(edge);
     }
 
-    /**
-     * Removes an edge from an edge list(either the successor or predecessor edge list).
-     *
-     * @param edge     the edge to be removed.
-     * @param edgeList the edge list that used to contain the removed edge.
-     */
-    private void removeEdge(CFGEdge edge, List<CFGEdge> edgeList) {
-        int i;
-        long destId = edge.getDest().getId();
-        for (i = 0; i < edgeList.size() && edgeList.get(i).getDest().getId() != destId; ++i) ;
-        if (i < edgeList.size()) {
-            edgeList.remove(i);
-        }
-    }
-
-    /**
-     * Removes an edge from the successor edge list.
-     * Caution: this method should only be used by the CFG class and not called elsewhere.
-     *
-     * @param succEdge the successor edge to be removed.
-     */
-    void removeSuccEdge(CFGEdge succEdge) {
-        removeEdge(succEdge, succEdgeList);
-    }
-
-    /**
-     * Removes an edge from the predecessor edge list.
-     * Caution: this method should only be used by the CFG class and not called elsewhere.
-     *
-     * @param predEdge the predecessor edge to be removed.
-     */
-    void removePredEdge(CFGEdge predEdge) {
-        removeEdge(predEdge, predEdgeList);
-    }
-
     @Override
     public Iterator<Instruction> iterator() {
         return instrList.iterator();
     }
 
-    public ListIterator<Instruction> listIterator() {
-        return instrList.listIterator();
+    public IInstrIterator instrIterator() {
+        return new InstrIterator();
     }
 
-    public BasicBlock accept(ICFGVisitor cfgVisitor) {
-        return cfgVisitor.visitBasicBlock(this);
+    public Iterator<CFGEdge> succEdgeListIterator() {
+        return succEdgeList.iterator();
+    }
+
+    public Iterator<CFGEdge> predEdgeListIterator() {
+        return predEdgeList.iterator();
+    }
+
+    public void accept(ICFGVisitor cfgVisitor) {
+        cfgVisitor.visitBasicBlock(this);
     }
 }

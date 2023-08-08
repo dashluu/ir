@@ -22,6 +22,7 @@ public class BasicBlockBuilder extends ASTPass {
     private BasicBlock block;
     private CFG cfg;
     private long blockId = 0;
+    private long instrId = 0;
     private Instruction headInstr;
     private Instruction tailInstr;
 
@@ -46,7 +47,7 @@ public class BasicBlockBuilder extends ASTPass {
         // Traverse and process the AST
         root.accept(this);
         // Insert an exit instruction at the end
-        Instruction instr = new ExitInstr();
+        Instruction instr = new ExitInstr(instrId++);
         updateAndAddInstr(instr);
         // Exit module
         structStack.pop();
@@ -93,7 +94,7 @@ public class BasicBlockBuilder extends ASTPass {
         SymRefTable symRefTable = symRefTableStack.peek();
         assert symRefTable != null;
         VarRef destRef = (VarRef) symRefTable.getClosureSymRef(destName);
-        Instruction instr = new StoreInstr(Opcode.STORE_VAR, destRef);
+        Instruction instr = new StoreInstr(instrId++, Opcode.STORE_VAR, destRef);
         updateAndAddInstr(instr);
     }
 
@@ -103,7 +104,7 @@ public class BasicBlockBuilder extends ASTPass {
         SymRefTable symRefTable = symRefTableStack.peek();
         assert symRefTable != null;
         VarRef srcRef = (VarRef) symRefTable.getClosureSymRef(src);
-        Instruction instr = new LoadInstr(Opcode.LOAD_VAR, srcRef);
+        Instruction instr = new LoadInstr(instrId++, Opcode.LOAD_VAR, srcRef);
         updateAndAddInstr(instr);
         return node;
     }
@@ -154,7 +155,7 @@ public class BasicBlockBuilder extends ASTPass {
             litRefTable.registerLiteralRef(litRef);
         }
 
-        Instruction instr = new LoadInstr(Opcode.LOAD_LITERAL, litRef);
+        Instruction instr = new LoadInstr(instrId++, Opcode.LOAD_LITERAL, litRef);
         updateAndAddInstr(instr);
         return node;
     }
@@ -163,7 +164,7 @@ public class BasicBlockBuilder extends ASTPass {
     public ASTNode visitSimpleDtype(ASTNode node) {
         String src = node.getTok().getVal();
         TypeRef srcRef = context.getTypeRefTable().getTypeRef(src);
-        Instruction instr = new LoadInstr(Opcode.LOAD_DTYPE, srcRef);
+        Instruction instr = new LoadInstr(instrId++, Opcode.LOAD_DTYPE, srcRef);
         updateAndAddInstr(instr);
         return node;
     }
@@ -174,7 +175,7 @@ public class BasicBlockBuilder extends ASTPass {
         Tok opTok = unOpNode.getTok();
         String opName = opTok.getVal();
         long opRef = opTok.getTokType().ordinal();
-        Instruction instr = new UnOpInstr(opName, opRef);
+        Instruction instr = new UnOpInstr(instrId++, opName, opRef);
         updateAndAddInstr(instr);
         return unOpNode;
     }
@@ -194,7 +195,7 @@ public class BasicBlockBuilder extends ASTPass {
             binOpNode = (BinOpASTNode) super.visitBinOp(binOpNode);
             String opName = opTok.getVal();
             long opRef = opId.ordinal();
-            Instruction instr = new BinOpInstr(opName, opRef);
+            Instruction instr = new BinOpInstr(instrId++, opName, opRef);
             updateAndAddInstr(instr);
         }
 
@@ -211,7 +212,7 @@ public class BasicBlockBuilder extends ASTPass {
         SymRefTable symRefTable = symRefTableStack.peek();
         assert symRefTable != null;
         FunRef funRef = (FunRef) symRefTable.getClosureSymRef(calleeName);
-        Instruction instr = new CallInstr(calleeName, funRef.getFunction().getHeadInstr());
+        Instruction instr = new CallInstr(instrId++, calleeName, funRef.getFunction().getHeadInstr());
         updateAndAddInstr(instr);
         return funCallNode;
     }
@@ -262,7 +263,7 @@ public class BasicBlockBuilder extends ASTPass {
     @Override
     public ASTNode visitRet(ASTNode node) {
         ASTNode retNode = super.visitRet(node);
-        Instruction instr = new RetInstr();
+        Instruction instr = new RetInstr(instrId++);
         updateAndAddInstr(instr);
         createBlock();
         return retNode;
@@ -270,7 +271,7 @@ public class BasicBlockBuilder extends ASTPass {
 
     @Override
     public ASTNode visitBreak(ASTNode node) {
-        Instruction instr = new BreakInstr(Opcode.BREAK_LOOP);
+        Instruction instr = new BreakInstr(instrId++, Opcode.BREAK_LOOP);
         updateAndAddInstr(instr);
         createBlock();
         return node;
@@ -278,7 +279,7 @@ public class BasicBlockBuilder extends ASTPass {
 
     @Override
     public ASTNode visitCont(ASTNode node) {
-        Instruction instr = new ContInstr();
+        Instruction instr = new ContInstr(instrId++);
         updateAndAddInstr(instr);
         createBlock();
         return node;
@@ -326,13 +327,13 @@ public class BasicBlockBuilder extends ASTPass {
         ASTNode condNode = ifNode.getCondNode().accept(this);
         ifNode.setCondNode(condNode);
         // Add a conditional jump before the body
-        Instruction instr = new BreakInstr(Opcode.BREAK_IF_FALSE);
+        Instruction instr = new BreakInstr(instrId++, Opcode.BREAK_IF_FALSE);
         updateAndAddInstr(instr);
         // Visit the body node
         ScopeASTNode bodyNode = (ScopeASTNode) ifNode.getBodyNode().accept(this);
         ifNode.setBodyNode(bodyNode);
         // Insert an instruction to jump out of the if-else sequence
-        instr = new BreakInstr(Opcode.BREAK_IF_ELSE);
+        instr = new BreakInstr(instrId++, Opcode.BREAK_IF_ELSE);
         updateAndAddInstr(instr);
 
         // Create a new basic block
@@ -356,13 +357,13 @@ public class BasicBlockBuilder extends ASTPass {
         ASTNode condNode = whileNode.getCondNode().accept(this);
         whileNode.setCondNode(condNode);
         // Conditional jump if the condition isn't met
-        Instruction instr = new BreakInstr(Opcode.BREAK_LOOP_FALSE);
+        Instruction instr = new BreakInstr(instrId++, Opcode.BREAK_LOOP_FALSE);
         updateAndAddInstr(instr);
         // Visit the body node
         ScopeASTNode bodyNode = (ScopeASTNode) whileNode.getBodyNode().accept(this);
         whileNode.setBodyNode(bodyNode);
         // Unconditional jump to the beginning of the while statement
-        instr = new ContInstr();
+        instr = new ContInstr(instrId++);
         updateAndAddInstr(instr);
 
         // Create a new basic block

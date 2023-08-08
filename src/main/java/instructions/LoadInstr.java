@@ -5,8 +5,8 @@ import refs.SymRef;
 public class LoadInstr extends Instruction {
     private final SymRef srcRef;
 
-    public LoadInstr(Opcode opcode, SymRef srcRef) {
-        super(InstrType.LOAD, opcode);
+    public LoadInstr(long id, Opcode opcode, SymRef srcRef) {
+        super(id, InstrType.LOAD, opcode);
         this.srcRef = srcRef;
     }
 

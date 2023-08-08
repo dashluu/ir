@@ -5,8 +5,8 @@ public class UnOpInstr extends Instruction {
     private final String opName;
     private final long opRef;
 
-    public UnOpInstr(String opName, long opRef) {
-        super(InstrType.UN_OP, null);
+    public UnOpInstr(long id, String opName, long opRef) {
+        super(id, InstrType.UN_OP, null);
         this.opName = opName;
         this.opRef = opRef;
     }

@@ -5,5 +5,5 @@ import instructions.IInstrVisitor;
 public interface ICFGVisitor extends IInstrVisitor {
     void visitCFG(CFG cfg);
 
-    BasicBlock visitBasicBlock(BasicBlock block);
+    void visitBasicBlock(BasicBlock block);
 }

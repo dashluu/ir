@@ -5,8 +5,8 @@ public class CallInstr extends Instruction {
     private final String calleeName;
     private Instruction calleeHeadInstr;
 
-    public CallInstr(String calleeName, Instruction calleeHeadInstr) {
-        super(InstrType.CALL, null);
+    public CallInstr(long id, String calleeName, Instruction calleeHeadInstr) {
+        super(id, InstrType.CALL, null);
         this.calleeName = calleeName;
         this.calleeHeadInstr = calleeHeadInstr;
     }
@@ -30,6 +30,6 @@ public class CallInstr extends Instruction {
 
     @Override
     public String toString() {
-        return super.toString() + " " + calleeHeadInstr.getLabel() + " (" + calleeName + ")";
+        return super.toString() + " " + calleeHeadInstr.getId() + " (" + calleeName + ")";
     }
 }

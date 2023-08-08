@@ -1,8 +1,8 @@
 package instructions;
 
 public class ExitInstr extends Instruction {
-    public ExitInstr() {
-        super(InstrType.EXIT, null);
+    public ExitInstr(long id) {
+        super(id, InstrType.EXIT, null);
     }
 
     @Override

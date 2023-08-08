@@ -5,8 +5,8 @@ import refs.SymRef;
 public class StoreInstr extends Instruction {
     private final SymRef destRef;
 
-    public StoreInstr(Opcode opcode, SymRef destRef) {
-        super(InstrType.STORE, opcode);
+    public StoreInstr(long id, Opcode opcode, SymRef destRef) {
+        super(id, InstrType.STORE, opcode);
         this.destRef = destRef;
     }
 

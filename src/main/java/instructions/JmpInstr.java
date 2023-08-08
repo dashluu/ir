@@ -3,8 +3,8 @@ package instructions;
 public class JmpInstr extends Instruction {
     private Instruction targetHeadInstr;
 
-    public JmpInstr(Opcode opcode, Instruction targetHeadInstr) {
-        super(InstrType.JMP, opcode);
+    public JmpInstr(long id, Opcode opcode, Instruction targetHeadInstr) {
+        super(id, InstrType.JMP, opcode);
         this.targetHeadInstr = targetHeadInstr;
     }
 
@@ -23,6 +23,6 @@ public class JmpInstr extends Instruction {
 
     @Override
     public String toString() {
-        return super.toString() + " " + targetHeadInstr.getLabel();
+        return super.toString() + " " + targetHeadInstr.getId();
     }
 }

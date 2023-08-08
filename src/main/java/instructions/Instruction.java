@@ -5,6 +5,7 @@ import structs.IRStruct;
 
 // A class whose instances represent IR instructions
 public abstract class Instruction {
+    protected final long id;
     protected final InstrType instrType;
     protected final Opcode opcode;
     // The basic block that stores this instruction
@@ -12,11 +13,15 @@ public abstract class Instruction {
     protected IRStruct container;
     protected Instruction nextInstr;
     protected Instruction prevInstr;
-    protected long label;
 
-    public Instruction(InstrType instrType, Opcode opcode) {
+    public Instruction(long id, InstrType instrType, Opcode opcode) {
+        this.id = id;
         this.instrType = instrType;
         this.opcode = opcode;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public InstrType getInstrType() {
@@ -57,14 +62,6 @@ public abstract class Instruction {
 
     public void setPrevInstr(Instruction prevInstr) {
         this.prevInstr = prevInstr;
-    }
-
-    public long getLabel() {
-        return label;
-    }
-
-    public void setLabel(long label) {
-        this.label = label;
     }
 
     public abstract Instruction accept(IInstrVisitor instrVisitor);

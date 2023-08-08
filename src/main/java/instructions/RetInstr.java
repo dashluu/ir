@@ -1,8 +1,8 @@
 package instructions;
 
 public class RetInstr extends Instruction {
-    public RetInstr() {
-        super(InstrType.RET, null);
+    public RetInstr(long id) {
+        super(id, InstrType.RET, null);
     }
 
     @Override

@@ -8,8 +8,6 @@ import structs.IRStruct;
 import structs.IRStructType;
 import utils.IRContext;
 
-import java.util.ListIterator;
-
 public class JmpTargetResolver implements ICFGVisitor {
     /**
      * Visits instructions in the given context's CFG and resolves jump targets.
@@ -23,35 +21,19 @@ public class JmpTargetResolver implements ICFGVisitor {
 
     @Override
     public void visitCFG(CFG cfg) {
-        ListIterator<BasicBlock> blockIter = cfg.listIterator();
-        BasicBlock block;
-
-        while (blockIter.hasNext()) {
-            block = blockIter.next().accept(this);
-            if (block == null) {
-                blockIter.remove();
-            } else {
-                blockIter.set(block);
-            }
+        for (BasicBlock block : cfg) {
+            block.accept(this);
         }
     }
 
     @Override
-    public BasicBlock visitBasicBlock(BasicBlock block) {
-        ListIterator<Instruction> instrIter = block.listIterator();
+    public void visitBasicBlock(BasicBlock block) {
+        IInstrIterator instrIter = block.instrIterator();
         Instruction instr;
-
         while (instrIter.hasNext()) {
             instr = instrIter.next().accept(this);
-            if (instr == null) {
-                instrIter.remove();
-            } else {
-                instrIter.set(instr);
-            }
+            instrIter.set(instr);
         }
-
-        // Remove basic block if it is empty
-        return block.isEmpty() ? null : block;
     }
 
     @Override
@@ -76,6 +58,7 @@ public class JmpTargetResolver implements ICFGVisitor {
 
     @Override
     public Instruction visitBreakInstr(BreakInstr breakInstr) {
+        long instrId = breakInstr.getId();
         Opcode opcode = breakInstr.getOpcode();
         Instruction instr, targetHeadInstr;
         IRStruct upStruct;
@@ -87,7 +70,7 @@ public class JmpTargetResolver implements ICFGVisitor {
                      upStruct = upStruct.getParent())
                     ;
                 targetHeadInstr = upStruct.getTailInstr().getNextInstr();
-                instr = new JmpInstr(Opcode.JMP, targetHeadInstr);
+                instr = new JmpInstr(instrId, Opcode.JMP, targetHeadInstr);
             }
             case BREAK_IF_ELSE -> {
                 for (upStruct = breakInstr.getContainer();
@@ -95,7 +78,7 @@ public class JmpTargetResolver implements ICFGVisitor {
                      upStruct = upStruct.getParent())
                     ;
                 targetHeadInstr = upStruct.getTailInstr().getNextInstr();
-                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetHeadInstr);
+                instr = new JmpInstr(instrId, Opcode.JMP_IF_FALSE, targetHeadInstr);
             }
             case BREAK_LOOP_FALSE -> {
                 for (upStruct = breakInstr.getContainer();
@@ -103,7 +86,7 @@ public class JmpTargetResolver implements ICFGVisitor {
                      upStruct = upStruct.getParent())
                     ;
                 targetHeadInstr = upStruct.getTailInstr().getNextInstr();
-                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetHeadInstr);
+                instr = new JmpInstr(instrId, Opcode.JMP_IF_FALSE, targetHeadInstr);
             }
             default -> {
                 for (upStruct = breakInstr.getContainer();
@@ -111,7 +94,7 @@ public class JmpTargetResolver implements ICFGVisitor {
                      upStruct = upStruct.getParent())
                     ;
                 targetHeadInstr = upStruct.getTailInstr().getNextInstr();
-                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetHeadInstr);
+                instr = new JmpInstr(instrId, Opcode.JMP_IF_FALSE, targetHeadInstr);
             }
         }
 
@@ -126,7 +109,7 @@ public class JmpTargetResolver implements ICFGVisitor {
              upStruct = upStruct.getParent())
             ;
         Instruction targetHeadInstr = upStruct.getHeadInstr();
-        return new JmpInstr(Opcode.JMP, targetHeadInstr);
+        return new JmpInstr(contInstr.getId(), Opcode.JMP, targetHeadInstr);
     }
 
     @Override
