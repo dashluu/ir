@@ -3,20 +3,24 @@ package instructions;
 // Instruction for calling function
 public class CallInstr extends Instruction {
     private final String calleeName;
-    private final long calleeId;
+    private Instruction calleeHeadInstr;
 
-    public CallInstr(String calleeName, long calleeId) {
+    public CallInstr(String calleeName, Instruction calleeHeadInstr) {
         super(InstrType.CALL, null);
         this.calleeName = calleeName;
-        this.calleeId = calleeId;
+        this.calleeHeadInstr = calleeHeadInstr;
     }
 
     public String getCalleeName() {
         return calleeName;
     }
 
-    public long getCalleeId() {
-        return calleeId;
+    public Instruction getCalleeHeadInstr() {
+        return calleeHeadInstr;
+    }
+
+    public void setCalleeHeadInstr(Instruction calleeHeadInstr) {
+        this.calleeHeadInstr = calleeHeadInstr;
     }
 
     @Override
@@ -26,6 +30,6 @@ public class CallInstr extends Instruction {
 
     @Override
     public String toString() {
-        return super.toString() + " " + calleeId + " (" + calleeName + ")";
+        return super.toString() + " " + calleeHeadInstr.getLabel() + " (" + calleeName + ")";
     }
 }

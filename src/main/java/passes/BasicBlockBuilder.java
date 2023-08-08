@@ -3,9 +3,8 @@ package passes;
 import ast.*;
 import cfg.BasicBlock;
 import cfg.CFG;
-import id_refs.IdRefTable;
+import refs.*;
 import instructions.*;
-import literal_refs.LiteralRefTable;
 import structs.IRFunction;
 import structs.IRStruct;
 import structs.IRStructType;
@@ -17,13 +16,14 @@ import utils.IRContext;
 import java.util.ArrayDeque;
 
 public class BasicBlockBuilder extends ASTPass {
-    private final ArrayDeque<IdRefTable> idRefTableStack = new ArrayDeque<>();
-    private long nextIdRef = 0, nextLitRef = 0;
+    private final ArrayDeque<SymRefTable> symRefTableStack = new ArrayDeque<>();
+    private long nextSymRefVal = 0, nextLitRefVal = 0;
     private final ArrayDeque<IRStruct> structStack = new ArrayDeque<>();
     private BasicBlock block;
     private CFG cfg;
-    private long currInstr = 0;
-    private long currBlock = 0;
+    private long blockId = 0;
+    private Instruction headInstr;
+    private Instruction tailInstr;
 
     /**
      * Traverses an AST and constructs basic blocks for the CFG in the given context.
@@ -35,13 +35,13 @@ public class BasicBlockBuilder extends ASTPass {
         this.context = context;
         cfg = context.getCfg();
         // Set up the first block
-        block = new BasicBlock(currBlock++);
+        block = new BasicBlock(blockId++);
         cfg.addBasicBlock(block);
         // Set up the first identifier reference table
-        IdRefTable idRefTable = new IdRefTable(null);
-        idRefTableStack.push(idRefTable);
+        SymRefTable symRefTable = new SymRefTable(null);
+        symRefTableStack.push(symRefTable);
         // Enter module
-        IRStruct module = new IRStruct(currInstr, -1, IRStructType.MODULE, null);
+        IRStruct module = new IRStruct(IRStructType.MODULE, null);
         structStack.push(module);
         // Traverse and process the AST
         root.accept(this);
@@ -50,42 +50,60 @@ public class BasicBlockBuilder extends ASTPass {
         updateAndAddInstr(instr);
         // Exit module
         structStack.pop();
-        module.setEnd(currInstr);
         // Pop everything off the stack
-        idRefTableStack.pop();
+        symRefTableStack.pop();
     }
 
     private void createBlock() {
         if (!block.isEmpty()) {
-            block = new BasicBlock(currBlock++);
+            block = new BasicBlock(blockId++);
             cfg.addBasicBlock(block);
         }
     }
 
     private void updateAndAddInstr(Instruction instr) {
-        IRStruct struct = structStack.peek();
-        instr.setContainer(struct);
+        // Link the current block to the instruction
         block.addInstr(instr);
         instr.setBlock(block);
-        ++currInstr;
+
+        // Update the head and tail instruction of the current structure hierarchy
+        IRStruct upStruct = structStack.peek();
+        instr.setContainer(upStruct);
+        while (upStruct != null) {
+            if (upStruct.getHeadInstr() == null) {
+                upStruct.setHeadInstr(instr);
+            } else {
+                upStruct.setTailInstr(instr);
+            }
+            upStruct = upStruct.getParent();
+        }
+
+        // Update the linked list of instructions
+        if (headInstr == null) {
+            headInstr = tailInstr = instr;
+        } else {
+            tailInstr.setNextInstr(instr);
+            instr.setPrevInstr(tailInstr);
+            tailInstr = instr;
+        }
     }
 
     private void storeVar(ASTNode idNode) {
         String destName = idNode.getTok().getVal();
-        IdRefTable idRefTable = idRefTableStack.peek();
-        assert idRefTable != null;
-        long destRef = idRefTable.getClosureIdRef(destName);
-        Instruction instr = new StoreInstr(Opcode.STORE_VAR, destName, destRef);
+        SymRefTable symRefTable = symRefTableStack.peek();
+        assert symRefTable != null;
+        VarRef destRef = (VarRef) symRefTable.getClosureSymRef(destName);
+        Instruction instr = new StoreInstr(Opcode.STORE_VAR, destRef);
         updateAndAddInstr(instr);
     }
 
     @Override
     public ASTNode visitId(ASTNode node) {
         String src = node.getTok().getVal();
-        IdRefTable idRefTable = idRefTableStack.peek();
-        assert idRefTable != null;
-        long srcRef = idRefTable.getClosureIdRef(src);
-        Instruction instr = new LoadInstr(Opcode.LOAD_VAR, src, srcRef);
+        SymRefTable symRefTable = symRefTableStack.peek();
+        assert symRefTable != null;
+        VarRef srcRef = (VarRef) symRefTable.getClosureSymRef(src);
+        Instruction instr = new LoadInstr(Opcode.LOAD_VAR, srcRef);
         updateAndAddInstr(instr);
         return node;
     }
@@ -103,9 +121,11 @@ public class BasicBlockBuilder extends ASTPass {
         ParamDeclASTNode paramDeclNode = (ParamDeclASTNode) node;
         IdASTNode idNode = paramDeclNode.getIdNode();
         String id = idNode.getTok().getVal();
-        IdRefTable idRefTable = idRefTableStack.peek();
-        assert idRefTable != null;
-        idRefTable.registerIdRef(id, nextIdRef++);
+        TypeInfo dtype = idNode.getDtype();
+        SymRefTable symRefTable = symRefTableStack.peek();
+        assert symRefTable != null;
+        VarRef varRef = new VarRef(id, dtype, nextSymRefVal++);
+        symRefTable.registerSymRef(varRef);
         return paramDeclNode;
     }
 
@@ -114,24 +134,27 @@ public class BasicBlockBuilder extends ASTPass {
         VarDeclASTNode varDeclNode = (VarDeclASTNode) node;
         IdASTNode idNode = varDeclNode.getIdNode();
         String id = idNode.getTok().getVal();
-        IdRefTable idRefTable = idRefTableStack.peek();
-        assert idRefTable != null;
-        idRefTable.registerIdRef(id, nextIdRef++);
+        TypeInfo dtype = idNode.getDtype();
+        SymRefTable symRefTable = symRefTableStack.peek();
+        assert symRefTable != null;
+        VarRef varRef = new VarRef(id, dtype, nextSymRefVal++);
+        symRefTable.registerSymRef(varRef);
         return varDeclNode;
     }
 
     @Override
     public ASTNode visitLiteral(ASTNode node) {
         String litVal = node.getTok().getVal();
+        TypeInfo dtype = node.getDtype();
         LiteralRefTable litRefTable = context.getLiteralRefTable();
-        long litRef = litRefTable.getLiteralRef(litVal);
-        if (litRef == LiteralRefTable.END) {
+        LiteralRef litRef = litRefTable.getLiteralRef(litVal);
+        if (litRef == null) {
             // Create a new literal reference
-            litRef = nextLitRef++;
-            litRefTable.registerLiteralRef(litVal, litRef);
+            litRef = new LiteralRef(litVal, dtype, nextLitRefVal++);
+            litRefTable.registerLiteralRef(litRef);
         }
 
-        Instruction instr = new LoadInstr(Opcode.LOAD_LITERAL, litVal, litRef);
+        Instruction instr = new LoadInstr(Opcode.LOAD_LITERAL, litRef);
         updateAndAddInstr(instr);
         return node;
     }
@@ -139,8 +162,8 @@ public class BasicBlockBuilder extends ASTPass {
     @Override
     public ASTNode visitSimpleDtype(ASTNode node) {
         String src = node.getTok().getVal();
-        long srcRef = context.getTypeRefTable().getTypeRef(src);
-        Instruction instr = new LoadInstr(Opcode.LOAD_DTYPE, src, srcRef);
+        TypeRef srcRef = context.getTypeRefTable().getTypeRef(src);
+        Instruction instr = new LoadInstr(Opcode.LOAD_DTYPE, srcRef);
         updateAndAddInstr(instr);
         return node;
     }
@@ -185,10 +208,10 @@ public class BasicBlockBuilder extends ASTPass {
         funCallNode.setArgListNode(argListNode);
         IdASTNode idNode = funCallNode.getIdNode();
         String calleeName = idNode.getTok().getVal();
-        IdRefTable idRefTable = idRefTableStack.peek();
-        assert idRefTable != null;
-        long calleeId = idRefTable.getClosureIdRef(calleeName);
-        Instruction instr = new CallInstr(calleeName, calleeId);
+        SymRefTable symRefTable = symRefTableStack.peek();
+        assert symRefTable != null;
+        FunRef funRef = (FunRef) symRefTable.getClosureSymRef(calleeName);
+        Instruction instr = new CallInstr(calleeName, funRef.getFunction().getHeadInstr());
         updateAndAddInstr(instr);
         return funCallNode;
     }
@@ -197,32 +220,33 @@ public class BasicBlockBuilder extends ASTPass {
     public ASTNode visitFunDef(ASTNode node) {
         // Enter function
         IRStruct parent = structStack.peek();
-        TypeInfo retDtype = node.getDtype();
-        IRStruct function = new IRFunction(currInstr, -1, parent, retDtype);
+        FunDefASTNode funDefNode = (FunDefASTNode) node;
+        TypeInfo retDtype = funDefNode.getDtype();
+        IRFunction function = new IRFunction(retDtype, parent);
         structStack.push(function);
-
         // Create a new basic block
         createBlock();
 
         // Register function in the identifier reference table
-        FunDefASTNode funDefNode = (FunDefASTNode) node;
         IdASTNode idNode = funDefNode.getIdNode();
         String funId = idNode.getTok().getVal();
-        IdRefTable topIdRefTable = idRefTableStack.peek();
-        assert topIdRefTable != null;
-        topIdRefTable.registerIdRef(funId, currInstr);
-        IdRefTable newIdRefTable = new IdRefTable(topIdRefTable);
+        SymRefTable topSymRefTable = symRefTableStack.peek();
+        assert topSymRefTable != null;
+        FunRef funRef = new FunRef(funId, function, nextSymRefVal++);
+        topSymRefTable.registerSymRef(funRef);
+        SymRefTable newSymRefTable = new SymRefTable(topSymRefTable);
         // Visit the function signature and body
-        idRefTableStack.push(newIdRefTable);
+        symRefTableStack.push(newSymRefTable);
         FunSignASTNode funSignNode = (FunSignASTNode) funDefNode.getSignNode().accept(this);
         ScopeASTNode bodyNode = (ScopeASTNode) funDefNode.getBodyNode().accept(this);
         funDefNode.setSignNode(funSignNode);
         funDefNode.setBodyNode(bodyNode);
-        idRefTableStack.pop();
+        symRefTableStack.pop();
 
+        // Create a new basic block
+        createBlock();
         // Exit function
         structStack.pop();
-        function.setEnd(currInstr);
         return node;
     }
 
@@ -262,11 +286,11 @@ public class BasicBlockBuilder extends ASTPass {
 
     @Override
     public ASTNode visitScope(ASTNode node) {
-        IdRefTable topIdRefTable = idRefTableStack.peek();
-        IdRefTable newIdRefTable = new IdRefTable(topIdRefTable);
-        idRefTableStack.push(newIdRefTable);
+        SymRefTable topSymRefTable = symRefTableStack.peek();
+        SymRefTable newSymRefTable = new SymRefTable(topSymRefTable);
+        symRefTableStack.push(newSymRefTable);
         ASTNode scopeNode = super.visitScope(node);
-        idRefTableStack.pop();
+        symRefTableStack.pop();
         return scopeNode;
     }
 
@@ -274,14 +298,17 @@ public class BasicBlockBuilder extends ASTPass {
     public ASTNode visitIfElse(ASTNode node) {
         // Enter if-else
         IRStruct parent = structStack.peek();
-        IRStruct ifElseStmt = new IRStruct(currInstr, -1, IRStructType.IF_ELSE, parent);
+        IRStruct ifElseStmt = new IRStruct(IRStructType.IF_ELSE, parent);
         structStack.push(ifElseStmt);
+        // Create a new basic block
+        createBlock();
 
         node = super.visitIfElse(node);
 
+        // Create a new basic block
+        createBlock();
         // Exit if-else
         structStack.pop();
-        ifElseStmt.setEnd(currInstr);
         return node;
     }
 
@@ -289,8 +316,10 @@ public class BasicBlockBuilder extends ASTPass {
     public ASTNode visitIf(ASTNode node) {
         // Enter if-block
         IRStruct parent = structStack.peek();
-        IRStruct ifStmt = new IRStruct(currInstr, -1, IRStructType.IF, parent);
+        IRStruct ifStmt = new IRStruct(IRStructType.IF, parent);
         structStack.push(ifStmt);
+        // Create a new basic block
+        createBlock();
 
         // Visit the condition node
         IfASTNode ifNode = (IfASTNode) node;
@@ -306,9 +335,10 @@ public class BasicBlockBuilder extends ASTPass {
         instr = new BreakInstr(Opcode.BREAK_IF_ELSE);
         updateAndAddInstr(instr);
 
+        // Create a new basic block
+        createBlock();
         // Exit if-block
         structStack.pop();
-        ifStmt.setEnd(currInstr);
         return ifNode;
     }
 
@@ -316,9 +346,8 @@ public class BasicBlockBuilder extends ASTPass {
     public ASTNode visitWhile(ASTNode node) {
         // Enter while-block
         IRStruct parent = structStack.peek();
-        IRStruct loopStmt = new IRStruct(currInstr, -1, IRStructType.LOOP, parent);
+        IRStruct loopStmt = new IRStruct(IRStructType.LOOP, parent);
         structStack.push(loopStmt);
-
         // Create a new basic block
         createBlock();
 
@@ -336,9 +365,10 @@ public class BasicBlockBuilder extends ASTPass {
         instr = new ContInstr();
         updateAndAddInstr(instr);
 
+        // Create a new basic block
+        createBlock();
         // Exit while-block
         structStack.pop();
-        loopStmt.setEnd(currInstr);
         return whileNode;
     }
 }

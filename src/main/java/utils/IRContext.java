@@ -1,12 +1,8 @@
 package utils;
 
 import cfg.CFG;
-import instructions.Instruction;
-import literal_refs.LiteralRefTable;
-import type_refs.TypeRefTable;
-
-import java.util.ArrayList;
-import java.util.List;
+import refs.LiteralRefTable;
+import refs.TypeRefTable;
 
 public class IRContext {
     private LiteralRefTable litRefTable;

@@ -5,8 +5,8 @@ import types.TypeInfo;
 public class IRFunction extends IRStruct {
     private final TypeInfo retDtype;
 
-    public IRFunction(long start, long end, IRStruct parent, TypeInfo retDtype) {
-        super(start, end, IRStructType.FUNCTION, parent);
+    public IRFunction(TypeInfo retDtype, IRStruct parent) {
+        super(IRStructType.FUNCTION, parent);
         this.retDtype = retDtype;
     }
 

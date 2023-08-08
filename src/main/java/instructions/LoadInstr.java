@@ -1,22 +1,16 @@
 package instructions;
 
-// Instruction used to load the value of a variable or a constant or a parameter
-public class LoadInstr extends Instruction {
-    // A source can be a variable, a constant, or a parameter
-    private final String srcName;
-    private final long srcRef;
+import refs.SymRef;
 
-    public LoadInstr(Opcode opcode, String srcName, long srcRef) {
+public class LoadInstr extends Instruction {
+    private final SymRef srcRef;
+
+    public LoadInstr(Opcode opcode, SymRef srcRef) {
         super(InstrType.LOAD, opcode);
-        this.srcName = srcName;
         this.srcRef = srcRef;
     }
 
-    public String getSrcName() {
-        return srcName;
-    }
-
-    public long getSrcRef() {
+    public SymRef getSrcRef() {
         return srcRef;
     }
 
@@ -27,6 +21,6 @@ public class LoadInstr extends Instruction {
 
     @Override
     public String toString() {
-        return super.toString() + " " + srcRef + " (" + srcName + ")";
+        return super.toString() + " " + srcRef.getRefVal() + " (" + srcRef.getId() + ")";
     }
 }

@@ -10,6 +10,9 @@ public abstract class Instruction {
     // The basic block that stores this instruction
     protected BasicBlock block;
     protected IRStruct container;
+    protected Instruction nextInstr;
+    protected Instruction prevInstr;
+    protected long label;
 
     public Instruction(InstrType instrType, Opcode opcode) {
         this.instrType = instrType;
@@ -38,6 +41,30 @@ public abstract class Instruction {
 
     public void setContainer(IRStruct container) {
         this.container = container;
+    }
+
+    public Instruction getNextInstr() {
+        return nextInstr;
+    }
+
+    public void setNextInstr(Instruction nextInstr) {
+        this.nextInstr = nextInstr;
+    }
+
+    public Instruction getPrevInstr() {
+        return prevInstr;
+    }
+
+    public void setPrevInstr(Instruction prevInstr) {
+        this.prevInstr = prevInstr;
+    }
+
+    public long getLabel() {
+        return label;
+    }
+
+    public void setLabel(long label) {
+        this.label = label;
     }
 
     public abstract Instruction accept(IInstrVisitor instrVisitor);

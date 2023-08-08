@@ -77,8 +77,7 @@ public class JmpTargetResolver implements ICFGVisitor {
     @Override
     public Instruction visitBreakInstr(BreakInstr breakInstr) {
         Opcode opcode = breakInstr.getOpcode();
-        long targetId;
-        Instruction instr;
+        Instruction instr, targetHeadInstr;
         IRStruct upStruct;
 
         switch (opcode) {
@@ -87,32 +86,32 @@ public class JmpTargetResolver implements ICFGVisitor {
                      upStruct.getStructType() != IRStructType.LOOP;
                      upStruct = upStruct.getParent())
                     ;
-                targetId = upStruct.getEnd();
-                instr = new JmpInstr(Opcode.JMP, targetId);
+                targetHeadInstr = upStruct.getTailInstr().getNextInstr();
+                instr = new JmpInstr(Opcode.JMP, targetHeadInstr);
             }
             case BREAK_IF_ELSE -> {
                 for (upStruct = breakInstr.getContainer();
                      upStruct.getStructType() != IRStructType.IF_ELSE;
                      upStruct = upStruct.getParent())
                     ;
-                targetId = upStruct.getEnd();
-                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetId);
+                targetHeadInstr = upStruct.getTailInstr().getNextInstr();
+                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetHeadInstr);
             }
             case BREAK_LOOP_FALSE -> {
                 for (upStruct = breakInstr.getContainer();
                      upStruct.getStructType() != IRStructType.LOOP;
                      upStruct = upStruct.getParent())
                     ;
-                targetId = upStruct.getEnd();
-                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetId);
+                targetHeadInstr = upStruct.getTailInstr().getNextInstr();
+                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetHeadInstr);
             }
             default -> {
                 for (upStruct = breakInstr.getContainer();
                      upStruct.getStructType() != IRStructType.IF;
                      upStruct = upStruct.getParent())
                     ;
-                targetId = upStruct.getEnd();
-                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetId);
+                targetHeadInstr = upStruct.getTailInstr().getNextInstr();
+                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetHeadInstr);
             }
         }
 
@@ -126,8 +125,8 @@ public class JmpTargetResolver implements ICFGVisitor {
              upStruct.getStructType() != IRStructType.LOOP;
              upStruct = upStruct.getParent())
             ;
-        long targetId = upStruct.getStart();
-        return new JmpInstr(Opcode.JMP, targetId);
+        Instruction targetHeadInstr = upStruct.getHeadInstr();
+        return new JmpInstr(Opcode.JMP, targetHeadInstr);
     }
 
     @Override
@@ -143,16 +142,6 @@ public class JmpTargetResolver implements ICFGVisitor {
     @Override
     public Instruction visitRetInstr(RetInstr retInstr) {
         return retInstr;
-    }
-
-    @Override
-    public Instruction visitPushInstr(PushInstr pushInstr) {
-        IRStruct upStruct;
-        for (upStruct = pushInstr.getContainer(); upStruct != null; upStruct = upStruct.getParent()) {
-            upStruct.setEnd(upStruct.getEnd() - 1);
-        }
-        // Remove push instructions
-        return null;
     }
 
     @Override

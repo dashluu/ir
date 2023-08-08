@@ -1,32 +1,32 @@
 package structs;
 
+import instructions.Instruction;
+
 public class IRStruct {
-    private long start;
-    private long end;
+    private Instruction headInstr;
+    private Instruction tailInstr;
     private final IRStructType structType;
     private final IRStruct parent;
 
-    public IRStruct(long start, long end, IRStructType structType, IRStruct parent) {
-        this.start = start;
-        this.end = end;
+    public IRStruct(IRStructType structType, IRStruct parent) {
         this.structType = structType;
         this.parent = parent;
     }
 
-    public long getStart() {
-        return start;
+    public Instruction getHeadInstr() {
+        return headInstr;
     }
 
-    public void setStart(long start) {
-        this.start = start;
+    public void setHeadInstr(Instruction headInstr) {
+        this.headInstr = headInstr;
     }
 
-    public long getEnd() {
-        return end;
+    public Instruction getTailInstr() {
+        return tailInstr;
     }
 
-    public void setEnd(long end) {
-        this.end = end;
+    public void setTailInstr(Instruction tailInstr) {
+        this.tailInstr = tailInstr;
     }
 
     public IRStructType getStructType() {

@@ -1,21 +1,16 @@
 package instructions;
 
-// Instruction used to store a value to a variable or a constant or a parameter
-public class StoreInstr extends Instruction {
-    private final String destName;
-    private final long destRef;
+import refs.SymRef;
 
-    public StoreInstr(Opcode opcode, String destName, long destRef) {
+public class StoreInstr extends Instruction {
+    private final SymRef destRef;
+
+    public StoreInstr(Opcode opcode, SymRef destRef) {
         super(InstrType.STORE, opcode);
-        this.destName = destName;
         this.destRef = destRef;
     }
 
-    public String getDestName() {
-        return destName;
-    }
-
-    public long getDestRef() {
+    public SymRef getDestRef() {
         return destRef;
     }
 
@@ -26,6 +21,6 @@ public class StoreInstr extends Instruction {
 
     @Override
     public String toString() {
-        return super.toString() + " " + destRef + " (" + destName + ")";
+        return super.toString() + " " + destRef.getRefVal() + " (" + destRef.getId() + ")";
     }
 }
