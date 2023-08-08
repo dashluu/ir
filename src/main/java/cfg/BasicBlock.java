@@ -10,7 +10,53 @@ import java.util.ListIterator;
 // A vector of sequential instructions without branching(except possibly for the last instruction)
 // Uses the iterator pattern
 public class BasicBlock implements Iterable<Instruction> {
+    private class InstrIterator implements ICFGElementIterator<Instruction> {
+        private Instruction currInstr;
+
+        public InstrIterator() {
+            currInstr = headInstr;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return currInstr != null;
+        }
+
+        @Override
+        public Instruction next() {
+            Instruction tmpInstr = currInstr;
+            currInstr = currInstr.getNextInstr();
+            return tmpInstr;
+        }
+
+        @Override
+        public void set(Instruction elm) {
+            Instruction prevInstr = currInstr.getPrevInstr();
+            Instruction nextInstr = currInstr.getNextInstr();
+            prevInstr.setNextInstr(elm);
+            elm.setPrevInstr(prevInstr);
+            nextInstr.setPrevInstr(elm);
+            elm.setNextInstr(nextInstr);
+        }
+
+        @Override
+        public void add(Instruction elm) {
+            Instruction prevInstr = currInstr.getPrevInstr();
+            prevInstr.setNextInstr(elm);
+            elm.setPrevInstr(prevInstr);
+            currInstr.setPrevInstr(elm);
+            elm.setNextInstr(currInstr);
+        }
+
+        @Override
+        public void remove(Instruction elm) {
+
+        }
+    }
+
     private final long id;
+    private Instruction headInstr;
+    private Instruction tailInstr;
     private final List<Instruction> instrList = new ArrayList<>();
     // A list of successor edges(or outgoing edges)
     private final List<CFGEdge> succEdgeList = new ArrayList<>();
