@@ -1,6 +1,7 @@
 package passes;
 
 import ast.ASTNode;
+import cfg.CFG;
 import exceptions.SyntaxErr;
 import lexers.LexReader;
 import parsers.module.ModuleParser;
@@ -48,7 +49,8 @@ public class IRGenMain {
 
             blockBuilder.run(moduleNode, irContext);
             jmpTargetResolver.run(irContext);
-            IRDumper.dumpCFG(irContext, cfgWriter);
+            CFG cfg = irContext.getCfg();
+            cfg.out(cfgWriter);
         } catch (SyntaxErr | IOException e) {
             e.printStackTrace();
         } finally {

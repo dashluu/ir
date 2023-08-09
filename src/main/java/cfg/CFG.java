@@ -1,5 +1,9 @@
 package cfg;
 
+import instructions.Instruction;
+
+import java.io.IOException;
+import java.io.Writer;
 import java.util.*;
 
 // Control-flow graph
@@ -50,5 +54,25 @@ public class CFG implements Iterable<BasicBlock> {
 
     public void accept(ICFGVisitor cfgVisitor) {
         cfgVisitor.visitCFG(this);
+    }
+
+    /**
+     * Outputs the CFG to a destination.
+     *
+     * @param writer the Writer object for outputting the CFG.
+     * @throws IOException if there is an IO exception.
+     */
+    public void out(Writer writer) throws IOException {
+        StringBuilder strBuff = new StringBuilder();
+
+        for (BasicBlock block : blockList) {
+            strBuff.append("block ").append(block.getId()).append(":").append(System.lineSeparator());
+            for (Instruction instr : block) {
+                strBuff.append(instr.getId()).append(": ").append(instr).append(System.lineSeparator());
+            }
+            strBuff.append(System.lineSeparator());
+        }
+
+        writer.write(strBuff.toString());
     }
 }
