@@ -17,16 +17,10 @@ import java.io.*;
 public class IRGenMain {
     public static void main(String[] args) {
         String inFilename = args[0];
-        String instrOutFilename = args[1];
-        String cfgOutFilename = args[2];
-        Reader reader = null;
-        Writer instrWriter = null;
-        Writer cfgWriter = null;
+        String cfgOutFilename = args[1];
 
-        try {
-            reader = new BufferedReader(new FileReader(inFilename));
-            instrWriter = new BufferedWriter(new FileWriter(instrOutFilename));
-            cfgWriter = new BufferedWriter(new FileWriter(cfgOutFilename));
+        try (Reader reader = new BufferedReader(new FileReader(inFilename));
+             Writer cfgWriter = new BufferedWriter(new FileWriter(cfgOutFilename))) {
             LexReader lexReader = new LexReader(reader);
             ModuleParser moduleParser = new ModuleParser(lexReader);
             moduleParser.init();
@@ -53,20 +47,6 @@ public class IRGenMain {
             cfg.out(cfgWriter);
         } catch (SyntaxErr | IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-                if (instrWriter != null) {
-                    instrWriter.close();
-                }
-                if (cfgWriter != null) {
-                    cfgWriter.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 }
