@@ -1,6 +1,6 @@
 package instructions;
 
-public interface IInstrIterator {
+public interface IInstrListIterator {
     boolean hasNext();
 
     Instruction next();

@@ -35,15 +35,15 @@ public class BasicBlockBuilder extends ASTPass {
     public void run(ASTNode root, IRContext context) {
         this.context = context;
         cfg = context.getCfg();
-        // Set up the first block
-        block = new BasicBlock(blockId++);
-        cfg.addBasicBlock(block);
         // Set up the first identifier reference table
         SymRefTable symRefTable = new SymRefTable(null);
         symRefTableStack.push(symRefTable);
         // Enter module
         IRStruct module = new IRStruct(IRStructType.MODULE, null);
         structStack.push(module);
+        // Set up the first block
+        block = new BasicBlock(blockId++);
+        cfg.addBasicBlock(block);
         // Traverse and process the AST
         root.accept(this);
         // Insert an exit instruction at the end
@@ -63,23 +63,15 @@ public class BasicBlockBuilder extends ASTPass {
     }
 
     private void updateAndAddInstr(Instruction instr) {
-        // Link the current block to the instruction
+        // Add instruction to the current block
         block.addInstr(instr);
-        instr.setBlock(block);
 
-        // Update the head and tail instruction of the current structure hierarchy
-        IRStruct upStruct = structStack.peek();
-        instr.setContainer(upStruct);
-        while (upStruct != null) {
-            if (upStruct.getHeadInstr() == null) {
-                upStruct.setHeadInstr(instr);
-            } else {
-                upStruct.setTailInstr(instr);
-            }
-            upStruct = upStruct.getParent();
-        }
+        // Add instruction to the current structure
+        IRStruct struct = structStack.peek();
+        assert struct != null;
+        struct.addInstr(instr);
 
-        // Update the linked list of instructions
+        // Update instruction list
         if (headInstr == null) {
             headInstr = tailInstr = instr;
         } else {
@@ -222,18 +214,18 @@ public class BasicBlockBuilder extends ASTPass {
         // Enter function
         IRStruct parent = structStack.peek();
         FunDefASTNode funDefNode = (FunDefASTNode) node;
+        IdASTNode idNode = funDefNode.getIdNode();
+        String funId = idNode.getTok().getVal();
         TypeInfo retDtype = funDefNode.getDtype();
-        IRFunction function = new IRFunction(retDtype, parent);
+        IRFunction function = new IRFunction(funId, retDtype, parent);
         structStack.push(function);
         // Create a new basic block
         createBlock();
 
         // Register function in the identifier reference table
-        IdASTNode idNode = funDefNode.getIdNode();
-        String funId = idNode.getTok().getVal();
         SymRefTable topSymRefTable = symRefTableStack.peek();
         assert topSymRefTable != null;
-        FunRef funRef = new FunRef(funId, function, nextSymRefVal++);
+        FunRef funRef = new FunRef(funId, nextSymRefVal++, function);
         topSymRefTable.registerSymRef(funRef);
         SymRefTable newSymRefTable = new SymRefTable(topSymRefTable);
         // Visit the function signature and body
@@ -244,8 +236,6 @@ public class BasicBlockBuilder extends ASTPass {
         funDefNode.setBodyNode(bodyNode);
         symRefTableStack.pop();
 
-        // Create a new basic block
-        createBlock();
         // Exit function
         structStack.pop();
         return node;
@@ -301,8 +291,6 @@ public class BasicBlockBuilder extends ASTPass {
         IRStruct parent = structStack.peek();
         IRStruct ifElseStmt = new IRStruct(IRStructType.IF_ELSE, parent);
         structStack.push(ifElseStmt);
-        // Create a new basic block
-        createBlock();
 
         node = super.visitIfElse(node);
 
@@ -319,8 +307,6 @@ public class BasicBlockBuilder extends ASTPass {
         IRStruct parent = structStack.peek();
         IRStruct ifStmt = new IRStruct(IRStructType.IF, parent);
         structStack.push(ifStmt);
-        // Create a new basic block
-        createBlock();
 
         // Visit the condition node
         IfASTNode ifNode = (IfASTNode) node;

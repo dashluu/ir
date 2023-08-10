@@ -28,11 +28,11 @@ public class JmpTargetResolver implements ICFGVisitor {
 
     @Override
     public void visitBasicBlock(BasicBlock block) {
-        IInstrIterator instrIter = block.instrIterator();
+        IInstrListIterator instrListIter = block.instrListIterator();
         Instruction instr;
-        while (instrIter.hasNext()) {
-            instr = instrIter.next().accept(this);
-            instrIter.set(instr);
+        while (instrListIter.hasNext()) {
+            instr = instrListIter.next().accept(this);
+            instrListIter.set(instr);
         }
     }
 
@@ -61,39 +61,39 @@ public class JmpTargetResolver implements ICFGVisitor {
         long instrId = breakInstr.getId();
         Opcode opcode = breakInstr.getOpcode();
         Instruction instr, targetHeadInstr;
-        IRStruct upStruct;
+        IRStruct struct;
 
         switch (opcode) {
             case BREAK_LOOP -> {
-                for (upStruct = breakInstr.getContainer();
-                     upStruct.getStructType() != IRStructType.LOOP;
-                     upStruct = upStruct.getParent())
+                for (struct = breakInstr.getContainer();
+                     struct.getStructType() != IRStructType.LOOP;
+                     struct = struct.getParent())
                     ;
-                targetHeadInstr = upStruct.getTailInstr().getNextInstr();
+                targetHeadInstr = struct.getTailInstr().getNextInstr();
                 instr = new JmpInstr(instrId, Opcode.JMP, targetHeadInstr);
             }
             case BREAK_IF_ELSE -> {
-                for (upStruct = breakInstr.getContainer();
-                     upStruct.getStructType() != IRStructType.IF_ELSE;
-                     upStruct = upStruct.getParent())
+                for (struct = breakInstr.getContainer();
+                     struct.getStructType() != IRStructType.IF_ELSE;
+                     struct = struct.getParent())
                     ;
-                targetHeadInstr = upStruct.getTailInstr().getNextInstr();
+                targetHeadInstr = struct.getTailInstr().getNextInstr();
                 instr = new JmpInstr(instrId, Opcode.JMP_IF_FALSE, targetHeadInstr);
             }
             case BREAK_LOOP_FALSE -> {
-                for (upStruct = breakInstr.getContainer();
-                     upStruct.getStructType() != IRStructType.LOOP;
-                     upStruct = upStruct.getParent())
+                for (struct = breakInstr.getContainer();
+                     struct.getStructType() != IRStructType.LOOP;
+                     struct = struct.getParent())
                     ;
-                targetHeadInstr = upStruct.getTailInstr().getNextInstr();
+                targetHeadInstr = struct.getTailInstr().getNextInstr();
                 instr = new JmpInstr(instrId, Opcode.JMP_IF_FALSE, targetHeadInstr);
             }
             default -> {
-                for (upStruct = breakInstr.getContainer();
-                     upStruct.getStructType() != IRStructType.IF;
-                     upStruct = upStruct.getParent())
+                for (struct = breakInstr.getContainer();
+                     struct.getStructType() != IRStructType.IF;
+                     struct = struct.getParent())
                     ;
-                targetHeadInstr = upStruct.getTailInstr().getNextInstr();
+                targetHeadInstr = struct.getTailInstr().getNextInstr();
                 instr = new JmpInstr(instrId, Opcode.JMP_IF_FALSE, targetHeadInstr);
             }
         }
@@ -103,12 +103,12 @@ public class JmpTargetResolver implements ICFGVisitor {
 
     @Override
     public Instruction visitContInstr(ContInstr contInstr) {
-        IRStruct upStruct;
-        for (upStruct = contInstr.getContainer();
-             upStruct.getStructType() != IRStructType.LOOP;
-             upStruct = upStruct.getParent())
+        IRStruct struct;
+        for (struct = contInstr.getContainer();
+             struct.getStructType() != IRStructType.LOOP;
+             struct = struct.getParent())
             ;
-        Instruction targetHeadInstr = upStruct.getHeadInstr();
+        Instruction targetHeadInstr = struct.getHeadInstr();
         return new JmpInstr(contInstr.getId(), Opcode.JMP, targetHeadInstr);
     }
 

@@ -1,6 +1,6 @@
 package cfg;
 
-import instructions.IInstrIterator;
+import instructions.IInstrListIterator;
 import instructions.Instruction;
 
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import java.util.List;
 
 // A vector of sequential instructions without branching(except possibly for the last instruction)
 public class BasicBlock implements Iterable<Instruction> {
-    private class InstrIterator implements IInstrIterator {
+    private class InstrListIterator implements IInstrListIterator {
         private int i = 0;
 
         @Override
@@ -63,6 +63,7 @@ public class BasicBlock implements Iterable<Instruction> {
      */
     public void addInstr(Instruction instr) {
         instrList.add(instr);
+        instr.setBlock(this);
     }
 
     /**
@@ -99,8 +100,8 @@ public class BasicBlock implements Iterable<Instruction> {
         return instrList.iterator();
     }
 
-    public IInstrIterator instrIterator() {
-        return new InstrIterator();
+    public IInstrListIterator instrListIterator() {
+        return new InstrListIterator();
     }
 
     public Iterator<CFGEdge> succEdgeListIterator() {

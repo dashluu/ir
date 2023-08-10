@@ -17,16 +17,8 @@ public class IRStruct {
         return headInstr;
     }
 
-    public void setHeadInstr(Instruction headInstr) {
-        this.headInstr = headInstr;
-    }
-
     public Instruction getTailInstr() {
         return tailInstr;
-    }
-
-    public void setTailInstr(Instruction tailInstr) {
-        this.tailInstr = tailInstr;
     }
 
     public IRStructType getStructType() {
@@ -35,5 +27,23 @@ public class IRStruct {
 
     public IRStruct getParent() {
         return parent;
+    }
+
+    /**
+     * Adds an instruction to the structure.
+     *
+     * @param instr the instruction to be added.
+     */
+    public void addInstr(Instruction instr) {
+        instr.setContainer(this);
+        IRStruct struct = this;
+        while (struct != null) {
+            if (struct.headInstr == null) {
+                struct.headInstr = struct.tailInstr = instr;
+            } else {
+                struct.tailInstr = instr;
+            }
+            struct = struct.parent;
+        }
     }
 }

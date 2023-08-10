@@ -5,7 +5,7 @@ import structs.IRFunction;
 public class FunRef extends SymRef {
     private final IRFunction function;
 
-    public FunRef(String id, IRFunction function, long refVal) {
+    public FunRef(String id, long refVal, IRFunction function) {
         super(id, SymRefType.FUNCTION, function.getRetDtype(), refVal);
         this.function = function;
     }
