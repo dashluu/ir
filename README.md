@@ -37,7 +37,7 @@ There are several phases in the compilation process:
 * **Assembling**: turns assembly instructions into relocatable machine code.
 * **Linking**: links relocatable machine code with code from other object files to produce executables.
 
-## Compiler v.s Interpreter
+## Compiler, interpreter and beyond
 
 * **Compiler**: compiles the source language to a low-level target language.
 * **Transpiler**: compiles the source language to another high-level target language.
@@ -104,16 +104,14 @@ structures are:
 * `CFG`: represents a CFG.
 * `BasicBlock`: can be considered as a node in CFG. The properties of a basic block are mentioned above.
 * `CFGEdge`: an edge in the CFG that connects two basic blocks.
-* Using the constructed CFG, we can examine the flow of the program and look for optimization opportunities, for
-  example, whether a function recursion is present.
+* Using the constructed CFG, we can examine the flow of the program and look for optimization opportunities.
 
 ## Passes
 
 A pass can be thought as an object that processes the code. The current passes are in chronological order:
 
-* `InstrBuilder`: constructs a list of instructions by traversing the AST.
+* `BasicBlockBuilder`: builds a list of basic blocks for the CFG by walking the AST.
 * `JmpTargetResolver`: resolves any jump target by using the generated hierarchy from the previous pass.
-* `BasicBlockBuilder`: builds a list of basic blocks for the CFG from the constructed list of instructions.
 
 ## Other projects
 
