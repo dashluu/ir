@@ -6,8 +6,8 @@ import utils.IRContext;
 public abstract class ASTPass implements IASTVisitor {
     protected IRContext context;
 
-    protected ASTNode visitList(ListASTNode listNode) {
-        IASTNodeIterator nodeIterator = listNode.nodeIterator();
+    protected ASTNode visitMultichild(MultichildASTNode multichildNode) {
+        IASTNodeIterator nodeIterator = multichildNode.nodeIterator();
         ASTNode childNode;
 
         while (nodeIterator.hasNext()) {
@@ -15,7 +15,7 @@ public abstract class ASTPass implements IASTVisitor {
             nodeIterator.set(childNode);
         }
 
-        return listNode;
+        return multichildNode;
     }
 
     @Override
@@ -69,7 +69,7 @@ public abstract class ASTPass implements IASTVisitor {
     @Override
     public ASTNode visitParamList(ASTNode node) {
         ParamListASTNode paramListNode = (ParamListASTNode) node;
-        return visitList(paramListNode);
+        return visitMultichild(paramListNode);
     }
 
     @Override
@@ -149,13 +149,13 @@ public abstract class ASTPass implements IASTVisitor {
     @Override
     public ASTNode visitScope(ASTNode node) {
         ScopeASTNode scopeNode = (ScopeASTNode) node;
-        return visitList(scopeNode);
+        return visitMultichild(scopeNode);
     }
 
     @Override
     public ASTNode visitIfElse(ASTNode node) {
         IfElseASTNode ifElseNode = (IfElseASTNode) node;
-        return visitList(ifElseNode);
+        return visitMultichild(ifElseNode);
     }
 
     @Override
@@ -199,6 +199,6 @@ public abstract class ASTPass implements IASTVisitor {
     @Override
     public ASTNode visitExprList(ASTNode node) {
         ExprListASTNode exprListNode = (ExprListASTNode) node;
-        return visitList(exprListNode);
+        return visitMultichild(exprListNode);
     }
 }
