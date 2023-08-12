@@ -8,8 +8,32 @@ import java.util.*;
 
 // Control-flow graph
 public class CFG implements Iterable<BasicBlock> {
-    private final HashMap<Long, BasicBlock> blockMap = new HashMap<>();
-    private final List<BasicBlock> blockList = new ArrayList<>();
+    private class BasicBlockIterator implements Iterator<BasicBlock> {
+        private BasicBlock currBlock = headBlock;
+
+        @Override
+        public boolean hasNext() {
+            return currBlock != null;
+        }
+
+        @Override
+        public BasicBlock next() {
+            BasicBlock tmpBlock = currBlock;
+            currBlock = currBlock.getNextBasicBlock();
+            return tmpBlock;
+        }
+    }
+
+    private BasicBlock headBlock;
+    private BasicBlock tailBlock;
+
+    public BasicBlock getFirstBasicBlock() {
+        return headBlock;
+    }
+
+    public BasicBlock getTailBlock() {
+        return tailBlock;
+    }
 
     /**
      * Adds a new basic block to the graph.
@@ -17,8 +41,13 @@ public class CFG implements Iterable<BasicBlock> {
      * @param block the basic block to be added.
      */
     public void addBasicBlock(BasicBlock block) {
-        blockMap.put(block.getId(), block);
-        blockList.add(block);
+        if (headBlock == null) {
+            headBlock = tailBlock = block;
+        } else {
+            tailBlock.setNextBasicBlock(block);
+            block.setPrevBlock(tailBlock);
+            tailBlock = block;
+        }
     }
 
     /**
@@ -33,23 +62,9 @@ public class CFG implements Iterable<BasicBlock> {
         dest.addPredEdge(edge);
     }
 
-    /**
-     * Gets a basic block based on its identifier.
-     *
-     * @param id an integer as the identifier of a basic block.
-     * @return a basic block.
-     */
-    public BasicBlock getBasicBlock(long id) {
-        return blockMap.get(id);
-    }
-
     @Override
     public Iterator<BasicBlock> iterator() {
-        return blockList.iterator();
-    }
-
-    public ListIterator<BasicBlock> listIterator() {
-        return blockList.listIterator();
+        return new BasicBlockIterator();
     }
 
     public void accept(ICFGVisitor cfgVisitor) {
@@ -65,7 +80,7 @@ public class CFG implements Iterable<BasicBlock> {
     public void out(Writer writer) throws IOException {
         StringBuilder strBuff = new StringBuilder();
 
-        for (BasicBlock block : blockList) {
+        for (BasicBlock block : this) {
             strBuff.append("block ").append(block.getId()).append(":").append(System.lineSeparator());
             for (Instruction instr : block) {
                 strBuff.append(instr.getId()).append(": ").append(instr).append(System.lineSeparator());

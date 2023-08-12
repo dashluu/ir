@@ -42,6 +42,10 @@ public class BasicBlock implements Iterable<Instruction> {
     }
 
     private final long id;
+    // Previous block in the sequence != predecessor
+    private BasicBlock prevBlock;
+    // Next block in the sequence != successor
+    private BasicBlock nextBlock;
     private final List<Instruction> instrList = new ArrayList<>();
     // A list of successor edges(or outgoing edges)
     private final List<CFGEdge> succEdgeList = new ArrayList<>();
@@ -54,6 +58,22 @@ public class BasicBlock implements Iterable<Instruction> {
 
     public long getId() {
         return id;
+    }
+
+    public BasicBlock getNextBasicBlock() {
+        return nextBlock;
+    }
+
+    public void setNextBasicBlock(BasicBlock nextBlock) {
+        this.nextBlock = nextBlock;
+    }
+
+    public BasicBlock getPrevBlock() {
+        return prevBlock;
+    }
+
+    public void setPrevBlock(BasicBlock prevBlock) {
+        this.prevBlock = prevBlock;
     }
 
     /**
