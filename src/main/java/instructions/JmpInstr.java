@@ -1,19 +1,19 @@
 package instructions;
 
 public class JmpInstr extends Instruction {
-    private Instruction targetHeadInstr;
+    private Instruction targetInstr;
 
-    public JmpInstr(long id, Opcode opcode, Instruction targetHeadInstr) {
+    public JmpInstr(long id, Opcode opcode, Instruction targetInstr) {
         super(id, InstrType.JMP, opcode);
-        this.targetHeadInstr = targetHeadInstr;
+        this.targetInstr = targetInstr;
     }
 
-    public Instruction getTargetHeadInstr() {
-        return targetHeadInstr;
+    public Instruction getTargetInstr() {
+        return targetInstr;
     }
 
-    public void setTargetHeadInstr(Instruction targetHeadInstr) {
-        this.targetHeadInstr = targetHeadInstr;
+    public void setTargetInstr(Instruction targetInstr) {
+        this.targetInstr = targetInstr;
     }
 
     @Override
@@ -23,6 +23,6 @@ public class JmpInstr extends Instruction {
 
     @Override
     public String toString() {
-        return super.toString() + " " + targetHeadInstr.getId();
+        return super.toString() + " " + targetInstr.getId();
     }
 }

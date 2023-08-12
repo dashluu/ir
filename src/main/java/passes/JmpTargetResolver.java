@@ -1,6 +1,5 @@
 package passes;
 
-import cfg.BasicBlock;
 import cfg.CFG;
 import cfg.ICFGVisitor;
 import instructions.*;
@@ -17,20 +16,6 @@ public class JmpTargetResolver implements ICFGVisitor {
     public void run(IRContext context) {
         CFG cfg = context.getCfg();
         cfg.accept(this);
-    }
-
-    @Override
-    public void visitCFG(CFG cfg) {
-        for (BasicBlock block : cfg) {
-            block.accept(this);
-        }
-    }
-
-    @Override
-    public void visitBasicBlock(BasicBlock block) {
-        for (Instruction instr : block) {
-            instr.accept(this);
-        }
     }
 
     @Override
