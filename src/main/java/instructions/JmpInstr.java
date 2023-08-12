@@ -17,8 +17,8 @@ public class JmpInstr extends Instruction {
     }
 
     @Override
-    public Instruction accept(IInstrVisitor instrVisitor) {
-        return instrVisitor.visitJmpInstr(this);
+    public void accept(IInstrVisitor instrVisitor) {
+        instrVisitor.visitJmpInstr(this);
     }
 
     @Override

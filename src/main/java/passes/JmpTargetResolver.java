@@ -28,36 +28,29 @@ public class JmpTargetResolver implements ICFGVisitor {
 
     @Override
     public void visitBasicBlock(BasicBlock block) {
-        IInstrListIterator instrListIter = block.instrListIterator();
-        Instruction instr;
-        while (instrListIter.hasNext()) {
-            instr = instrListIter.next().accept(this);
-            instrListIter.set(instr);
+        for (Instruction instr : block) {
+            instr.accept(this);
         }
     }
 
     @Override
-    public Instruction visitUnOpInstr(UnOpInstr unOpInstr) {
-        return unOpInstr;
+    public void visitUnOpInstr(UnOpInstr unOpInstr) {
     }
 
     @Override
-    public Instruction visitBinOpInstr(BinOpInstr binOpInstr) {
-        return binOpInstr;
+    public void visitBinOpInstr(BinOpInstr binOpInstr) {
     }
 
     @Override
-    public Instruction visitCallInstr(CallInstr callInstr) {
-        return callInstr;
+    public void visitCallInstr(CallInstr callInstr) {
     }
 
     @Override
-    public Instruction visitJmpInstr(JmpInstr jmpInstr) {
-        return jmpInstr;
+    public void visitJmpInstr(JmpInstr jmpInstr) {
     }
 
     @Override
-    public Instruction visitBreakInstr(BreakInstr breakInstr) {
+    public void visitBreakInstr(BreakInstr breakInstr) {
         long instrId = breakInstr.getId();
         Opcode opcode = breakInstr.getOpcode();
         Instruction instr, targetHeadInstr;
@@ -98,37 +91,34 @@ public class JmpTargetResolver implements ICFGVisitor {
             }
         }
 
-        return instr;
+        instr.replaceInstr(breakInstr);
     }
 
     @Override
-    public Instruction visitContInstr(ContInstr contInstr) {
+    public void visitContInstr(ContInstr contInstr) {
         IRStruct struct;
         for (struct = contInstr.getContainer();
              struct.getStructType() != IRStructType.LOOP;
              struct = struct.getParent())
             ;
         Instruction targetHeadInstr = struct.getHeadInstr();
-        return new JmpInstr(contInstr.getId(), Opcode.JMP, targetHeadInstr);
+        Instruction instr = new JmpInstr(contInstr.getId(), Opcode.JMP, targetHeadInstr);
+        instr.replaceInstr(contInstr);
     }
 
     @Override
-    public Instruction visitLoadInstr(LoadInstr loadInstr) {
-        return loadInstr;
+    public void visitLoadInstr(LoadInstr loadInstr) {
     }
 
     @Override
-    public Instruction visitStoreInstr(StoreInstr storeInstr) {
-        return storeInstr;
+    public void visitStoreInstr(StoreInstr storeInstr) {
     }
 
     @Override
-    public Instruction visitRetInstr(RetInstr retInstr) {
-        return retInstr;
+    public void visitRetInstr(RetInstr retInstr) {
     }
 
     @Override
-    public Instruction visitExitInstr(ExitInstr exitInstr) {
-        return exitInstr;
+    public void visitExitInstr(ExitInstr exitInstr) {
     }
 }

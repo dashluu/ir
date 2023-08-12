@@ -6,7 +6,7 @@ public class ExitInstr extends Instruction {
     }
 
     @Override
-    public Instruction accept(IInstrVisitor instrVisitor) {
-        return instrVisitor.visitExitInstr(this);
+    public void accept(IInstrVisitor instrVisitor) {
+        instrVisitor.visitExitInstr(this);
     }
 }

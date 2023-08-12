@@ -17,8 +17,16 @@ public class IRStruct {
         return headInstr;
     }
 
+    public void setHeadInstr(Instruction headInstr) {
+        this.headInstr = headInstr;
+    }
+
     public Instruction getTailInstr() {
         return tailInstr;
+    }
+
+    public void setTailInstr(Instruction tailInstr) {
+        this.tailInstr = tailInstr;
     }
 
     public IRStructType getStructType() {

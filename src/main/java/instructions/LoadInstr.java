@@ -15,8 +15,8 @@ public class LoadInstr extends Instruction {
     }
 
     @Override
-    public Instruction accept(IInstrVisitor instrVisitor) {
-        return instrVisitor.visitLoadInstr(this);
+    public void accept(IInstrVisitor instrVisitor) {
+        instrVisitor.visitLoadInstr(this);
     }
 
     @Override

@@ -20,8 +20,8 @@ public class BinOpInstr extends Instruction {
     }
 
     @Override
-    public Instruction accept(IInstrVisitor instrVisitor) {
-        return instrVisitor.visitBinOpInstr(this);
+    public void accept(IInstrVisitor instrVisitor) {
+        instrVisitor.visitBinOpInstr(this);
     }
 
     @Override

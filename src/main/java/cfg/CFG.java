@@ -9,30 +9,38 @@ import java.util.*;
 // Control-flow graph
 public class CFG implements Iterable<BasicBlock> {
     private class BasicBlockIterator implements Iterator<BasicBlock> {
-        private BasicBlock currBlock = headBlock;
+        private BasicBlock nextBlock = headBlock;
 
         @Override
         public boolean hasNext() {
-            return currBlock != null;
+            return nextBlock != null;
         }
 
         @Override
         public BasicBlock next() {
-            BasicBlock tmpBlock = currBlock;
-            currBlock = currBlock.getNextBasicBlock();
-            return tmpBlock;
+            BasicBlock currBlock = nextBlock;
+            nextBlock = nextBlock.getNextBasicBlock();
+            return currBlock;
         }
     }
 
     private BasicBlock headBlock;
     private BasicBlock tailBlock;
 
-    public BasicBlock getFirstBasicBlock() {
+    public BasicBlock getHeadBlock() {
         return headBlock;
+    }
+
+    public void setHeadBlock(BasicBlock headBlock) {
+        this.headBlock = headBlock;
     }
 
     public BasicBlock getTailBlock() {
         return tailBlock;
+    }
+
+    public void setTailBlock(BasicBlock tailBlock) {
+        this.tailBlock = tailBlock;
     }
 
     /**

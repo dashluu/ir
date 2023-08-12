@@ -219,7 +219,6 @@ public class BasicBlockBuilder extends ASTPass {
         TypeInfo retDtype = funDefNode.getDtype();
         IRFunction function = new IRFunction(funId, retDtype, parent);
         structStack.push(function);
-        // Create a new basic block
         createBlock();
 
         // Register function in the identifier reference table
@@ -293,9 +292,8 @@ public class BasicBlockBuilder extends ASTPass {
         structStack.push(ifElseStmt);
 
         node = super.visitIfElse(node);
-
-        // Create a new basic block
         createBlock();
+
         // Exit if-else
         structStack.pop();
         return node;
@@ -315,15 +313,16 @@ public class BasicBlockBuilder extends ASTPass {
         // Add a conditional jump before the body
         Instruction instr = new BreakInstr(instrId++, Opcode.BREAK_IF_FALSE);
         updateAndAddInstr(instr);
+        createBlock();
+
         // Visit the body node
         ScopeASTNode bodyNode = (ScopeASTNode) ifNode.getBodyNode().accept(this);
         ifNode.setBodyNode(bodyNode);
         // Insert an instruction to jump out of the if-else sequence
         instr = new BreakInstr(instrId++, Opcode.BREAK_IF_ELSE);
         updateAndAddInstr(instr);
-
-        // Create a new basic block
         createBlock();
+
         // Exit if-block
         structStack.pop();
         return ifNode;
@@ -335,7 +334,6 @@ public class BasicBlockBuilder extends ASTPass {
         IRStruct parent = structStack.peek();
         IRStruct loopStmt = new IRStruct(IRStructType.LOOP, parent);
         structStack.push(loopStmt);
-        // Create a new basic block
         createBlock();
 
         // Visit the condition node
@@ -345,15 +343,16 @@ public class BasicBlockBuilder extends ASTPass {
         // Conditional jump if the condition isn't met
         Instruction instr = new BreakInstr(instrId++, Opcode.BREAK_LOOP_FALSE);
         updateAndAddInstr(instr);
+        createBlock();
+
         // Visit the body node
         ScopeASTNode bodyNode = (ScopeASTNode) whileNode.getBodyNode().accept(this);
         whileNode.setBodyNode(bodyNode);
         // Unconditional jump to the beginning of the while statement
         instr = new ContInstr(instrId++);
         updateAndAddInstr(instr);
-
-        // Create a new basic block
         createBlock();
+
         // Exit while-block
         structStack.pop();
         return whileNode;

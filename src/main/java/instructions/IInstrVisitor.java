@@ -1,23 +1,23 @@
 package instructions;
 
 public interface IInstrVisitor {
-    Instruction visitUnOpInstr(UnOpInstr unOpInstr);
+    void visitUnOpInstr(UnOpInstr unOpInstr);
 
-    Instruction visitBinOpInstr(BinOpInstr binOpInstr);
+    void visitBinOpInstr(BinOpInstr binOpInstr);
 
-    Instruction visitCallInstr(CallInstr callInstr);
+    void visitCallInstr(CallInstr callInstr);
 
-    Instruction visitJmpInstr(JmpInstr jmpInstr);
+    void visitJmpInstr(JmpInstr jmpInstr);
 
-    Instruction visitBreakInstr(BreakInstr breakInstr);
+    void visitBreakInstr(BreakInstr breakInstr);
 
-    Instruction visitContInstr(ContInstr contInstr);
+    void visitContInstr(ContInstr contInstr);
 
-    Instruction visitRetInstr(RetInstr retInstr);
+    void visitRetInstr(RetInstr retInstr);
 
-    Instruction visitLoadInstr(LoadInstr loadInstr);
+    void visitLoadInstr(LoadInstr loadInstr);
 
-    Instruction visitStoreInstr(StoreInstr storeInstr);
+    void visitStoreInstr(StoreInstr storeInstr);
 
-    Instruction visitExitInstr(ExitInstr exitInstr);
+    void visitExitInstr(ExitInstr exitInstr);
 }

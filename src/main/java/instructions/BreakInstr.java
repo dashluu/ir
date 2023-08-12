@@ -6,7 +6,7 @@ public class BreakInstr extends Instruction {
     }
 
     @Override
-    public Instruction accept(IInstrVisitor instrVisitor) {
-        return instrVisitor.visitBreakInstr(this);
+    public void accept(IInstrVisitor instrVisitor) {
+        instrVisitor.visitBreakInstr(this);
     }
 }

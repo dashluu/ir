@@ -24,8 +24,8 @@ public class CallInstr extends Instruction {
     }
 
     @Override
-    public Instruction accept(IInstrVisitor instrVisitor) {
-        return instrVisitor.visitCallInstr(this);
+    public void accept(IInstrVisitor instrVisitor) {
+        instrVisitor.visitCallInstr(this);
     }
 
     @Override

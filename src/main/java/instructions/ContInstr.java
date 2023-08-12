@@ -6,7 +6,7 @@ public class ContInstr extends Instruction {
     }
 
     @Override
-    public Instruction accept(IInstrVisitor instrVisitor) {
-        return instrVisitor.visitContInstr(this);
+    public void accept(IInstrVisitor instrVisitor) {
+        instrVisitor.visitContInstr(this);
     }
 }

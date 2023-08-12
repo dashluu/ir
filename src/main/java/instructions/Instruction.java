@@ -64,7 +64,42 @@ public abstract class Instruction {
         this.prevInstr = prevInstr;
     }
 
-    public abstract Instruction accept(IInstrVisitor instrVisitor);
+    /**
+     * Replaces the given instruction with the caller instruction.
+     *
+     * @param instr the instruction to be replaced.
+     */
+    public void replaceInstr(Instruction instr) {
+        // Update the instruction's basic block
+        block = instr.getBlock();
+        if (instr == block.getHeadInstr()) {
+            block.setHeadInstr(this);
+        }
+        if (instr == block.getTailInstr()) {
+            block.setTailInstr(this);
+        }
+
+        // Update the instruction's container
+        container = instr.getContainer();
+        if (instr == container.getHeadInstr()) {
+            container.setHeadInstr(instr);
+        }
+        if (instr == container.getTailInstr()) {
+            container.setTailInstr(instr);
+        }
+
+        // Update the previous and next instruction
+        prevInstr = instr.getPrevInstr();
+        nextInstr = instr.getNextInstr();
+        if (prevInstr != null) {
+            prevInstr.setNextInstr(this);
+        }
+        if (nextInstr != null) {
+            nextInstr.setPrevInstr(this);
+        }
+    }
+
+    public abstract void accept(IInstrVisitor instrVisitor);
 
     @Override
     public String toString() {

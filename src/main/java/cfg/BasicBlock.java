@@ -1,6 +1,5 @@
 package cfg;
 
-import instructions.IInstrListIterator;
 import instructions.Instruction;
 
 import java.util.ArrayList;
@@ -9,35 +8,20 @@ import java.util.List;
 
 // A vector of sequential instructions without branching(except possibly for the last instruction)
 public class BasicBlock implements Iterable<Instruction> {
-    private class InstrListIterator implements IInstrListIterator {
-        private int i = 0;
+    private class InstrIterator implements Iterator<Instruction> {
+        protected Instruction currInstr;
+        protected Instruction nextInstr = headInstr;
 
         @Override
         public boolean hasNext() {
-            return i < instrList.size();
+            return nextInstr != null && nextInstr != tailInstr.getNextInstr();
         }
 
         @Override
         public Instruction next() {
-            return instrList.get(i++);
-        }
-
-        @Override
-        public void set(Instruction instr) {
-            // Update the current instruction
-            Instruction currInstr = instrList.get(i - 1);
-            instrList.set(i - 1, instr);
-            // Update the previous and next instruction
-            Instruction prevInstr = currInstr.getPrevInstr();
-            Instruction nextInstr = currInstr.getNextInstr();
-            instr.setPrevInstr(prevInstr);
-            instr.setNextInstr(nextInstr);
-            if (prevInstr != null) {
-                prevInstr.setNextInstr(instr);
-            }
-            if (nextInstr != null) {
-                nextInstr.setPrevInstr(instr);
-            }
+            currInstr = nextInstr;
+            nextInstr = nextInstr.getNextInstr();
+            return currInstr;
         }
     }
 
@@ -46,7 +30,8 @@ public class BasicBlock implements Iterable<Instruction> {
     private BasicBlock prevBlock;
     // Next block in the sequence != successor
     private BasicBlock nextBlock;
-    private final List<Instruction> instrList = new ArrayList<>();
+    private Instruction headInstr;
+    private Instruction tailInstr;
     // A list of successor edges(or outgoing edges)
     private final List<CFGEdge> succEdgeList = new ArrayList<>();
     // A list of predecessor edges(or ingoing edges)
@@ -76,14 +61,34 @@ public class BasicBlock implements Iterable<Instruction> {
         this.prevBlock = prevBlock;
     }
 
+    public Instruction getHeadInstr() {
+        return headInstr;
+    }
+
+    public void setHeadInstr(Instruction headInstr) {
+        this.headInstr = headInstr;
+    }
+
+    public Instruction getTailInstr() {
+        return tailInstr;
+    }
+
+    public void setTailInstr(Instruction tailInstr) {
+        this.tailInstr = tailInstr;
+    }
+
     /**
      * Adds a new instruction to the block.
      *
      * @param instr the instruction to be added.
      */
     public void addInstr(Instruction instr) {
-        instrList.add(instr);
         instr.setBlock(this);
+        if (headInstr == null) {
+            headInstr = tailInstr = instr;
+        } else {
+            tailInstr = instr;
+        }
     }
 
     /**
@@ -92,7 +97,7 @@ public class BasicBlock implements Iterable<Instruction> {
      * @return true if it is empty and false otherwise.
      */
     public boolean isEmpty() {
-        return instrList.isEmpty();
+        return headInstr == null;
     }
 
     /**
@@ -117,11 +122,7 @@ public class BasicBlock implements Iterable<Instruction> {
 
     @Override
     public Iterator<Instruction> iterator() {
-        return instrList.iterator();
-    }
-
-    public IInstrListIterator instrListIterator() {
-        return new InstrListIterator();
+        return new InstrIterator();
     }
 
     public Iterator<CFGEdge> succEdgeListIterator() {

@@ -20,8 +20,8 @@ public class UnOpInstr extends Instruction {
     }
 
     @Override
-    public Instruction accept(IInstrVisitor instrVisitor) {
-        return instrVisitor.visitUnOpInstr(this);
+    public void accept(IInstrVisitor instrVisitor) {
+        instrVisitor.visitUnOpInstr(this);
     }
 
     @Override
