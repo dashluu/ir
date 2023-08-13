@@ -36,7 +36,6 @@ public class JmpTargetResolver implements ICFGVisitor {
 
     @Override
     public void visitBreakInstr(BreakInstr breakInstr) {
-        long instrId = breakInstr.getId();
         Opcode opcode = breakInstr.getOpcode();
         Instruction instr, targetHeadInstr;
         IRStruct struct;
@@ -48,7 +47,7 @@ public class JmpTargetResolver implements ICFGVisitor {
                      struct = struct.getParent())
                     ;
                 targetHeadInstr = struct.getTailInstr().getNextInstr();
-                instr = new JmpInstr(instrId, Opcode.JMP, targetHeadInstr);
+                instr = new JmpInstr(Opcode.JMP, targetHeadInstr);
             }
             case BREAK_IF_ELSE -> {
                 for (struct = breakInstr.getContainer();
@@ -56,7 +55,7 @@ public class JmpTargetResolver implements ICFGVisitor {
                      struct = struct.getParent())
                     ;
                 targetHeadInstr = struct.getTailInstr().getNextInstr();
-                instr = new JmpInstr(instrId, Opcode.JMP_IF_FALSE, targetHeadInstr);
+                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetHeadInstr);
             }
             case BREAK_LOOP_FALSE -> {
                 for (struct = breakInstr.getContainer();
@@ -64,7 +63,7 @@ public class JmpTargetResolver implements ICFGVisitor {
                      struct = struct.getParent())
                     ;
                 targetHeadInstr = struct.getTailInstr().getNextInstr();
-                instr = new JmpInstr(instrId, Opcode.JMP_IF_FALSE, targetHeadInstr);
+                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetHeadInstr);
             }
             default -> {
                 for (struct = breakInstr.getContainer();
@@ -72,7 +71,7 @@ public class JmpTargetResolver implements ICFGVisitor {
                      struct = struct.getParent())
                     ;
                 targetHeadInstr = struct.getTailInstr().getNextInstr();
-                instr = new JmpInstr(instrId, Opcode.JMP_IF_FALSE, targetHeadInstr);
+                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetHeadInstr);
             }
         }
 
@@ -87,7 +86,7 @@ public class JmpTargetResolver implements ICFGVisitor {
              struct = struct.getParent())
             ;
         Instruction targetHeadInstr = struct.getHeadInstr();
-        Instruction instr = new JmpInstr(contInstr.getId(), Opcode.JMP, targetHeadInstr);
+        Instruction instr = new JmpInstr(Opcode.JMP, targetHeadInstr);
         instr.replaceInstr(contInstr);
     }
 
