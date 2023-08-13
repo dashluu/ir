@@ -1,8 +1,8 @@
 package instructions;
 
 public class ContInstr extends Instruction {
-    public ContInstr(long id) {
-        super(id, InstrType.CONT, null);
+    public ContInstr() {
+        super(InstrType.CONT, null);
     }
 
     @Override

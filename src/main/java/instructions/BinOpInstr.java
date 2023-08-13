@@ -5,8 +5,8 @@ public class BinOpInstr extends Instruction {
     private final String opName;
     private final long opRef;
 
-    public BinOpInstr(long id, String opName, long opRef) {
-        super(id, InstrType.BIN_OP, null);
+    public BinOpInstr(String opName, long opRef) {
+        super(InstrType.BIN_OP, null);
         this.opName = opName;
         this.opRef = opRef;
     }
