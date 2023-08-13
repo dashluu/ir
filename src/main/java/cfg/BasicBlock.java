@@ -2,9 +2,8 @@ package cfg;
 
 import instructions.Instruction;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 
 // A vector of sequential instructions without branching(except possibly for the last instruction)
 public class BasicBlock implements Iterable<Instruction> {
@@ -32,10 +31,10 @@ public class BasicBlock implements Iterable<Instruction> {
     private BasicBlock nextBlock;
     private Instruction headInstr;
     private Instruction tailInstr;
-    // A list of successor edges(or outgoing edges)
-    private final List<CFGEdge> succEdgeList = new ArrayList<>();
-    // A list of predecessor edges(or ingoing edges)
-    private final List<CFGEdge> predEdgeList = new ArrayList<>();
+    // A set of successor edges(or outgoing edges)
+    private final HashSet<CFGEdge> succEdgeSet = new HashSet<>();
+    // A set of predecessor edges(or ingoing edges)
+    private final HashSet<CFGEdge> predEdgeSet = new HashSet<>();
 
     public BasicBlock(long id) {
         this.id = id;
@@ -53,11 +52,11 @@ public class BasicBlock implements Iterable<Instruction> {
         this.nextBlock = nextBlock;
     }
 
-    public BasicBlock getPrevBlock() {
+    public BasicBlock getPrevBasicBlock() {
         return prevBlock;
     }
 
-    public void setPrevBlock(BasicBlock prevBlock) {
+    public void setPrevBasicBlock(BasicBlock prevBlock) {
         this.prevBlock = prevBlock;
     }
 
@@ -107,7 +106,7 @@ public class BasicBlock implements Iterable<Instruction> {
      * @param edge the successor edge to be added.
      */
     void addSuccEdge(CFGEdge edge) {
-        succEdgeList.add(edge);
+        succEdgeSet.add(edge);
     }
 
     /**
@@ -117,7 +116,7 @@ public class BasicBlock implements Iterable<Instruction> {
      * @param edge the predecessor edge to be added.
      */
     void addPredEdge(CFGEdge edge) {
-        predEdgeList.add(edge);
+        predEdgeSet.add(edge);
     }
 
     @Override
@@ -125,15 +124,31 @@ public class BasicBlock implements Iterable<Instruction> {
         return new InstrIterator();
     }
 
-    public Iterator<CFGEdge> succEdgeListIterator() {
-        return succEdgeList.iterator();
+    public Iterator<CFGEdge> succEdgeSetIterator() {
+        return succEdgeSet.iterator();
     }
 
-    public Iterator<CFGEdge> predEdgeListIterator() {
-        return predEdgeList.iterator();
+    public Iterator<CFGEdge> predEdgeSetIterator() {
+        return predEdgeSet.iterator();
     }
 
     public void accept(ICFGVisitor cfgVisitor) {
         cfgVisitor.visitBasicBlock(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof BasicBlock block)) {
+            return false;
+        }
+        return id == block.id;
     }
 }

@@ -53,7 +53,7 @@ public class CFG implements Iterable<BasicBlock> {
             headBlock = tailBlock = block;
         } else {
             tailBlock.setNextBasicBlock(block);
-            block.setPrevBlock(tailBlock);
+            block.setPrevBasicBlock(tailBlock);
             tailBlock = block;
         }
     }
@@ -91,7 +91,7 @@ public class CFG implements Iterable<BasicBlock> {
         for (BasicBlock block : this) {
             strBuff.append("block ").append(block.getId()).append(":").append(System.lineSeparator());
             for (Instruction instr : block) {
-                strBuff.append(instr.getId()).append(": ").append(instr).append(System.lineSeparator());
+                strBuff.append(instr.getLabel()).append(": ").append(instr).append(System.lineSeparator());
             }
             strBuff.append(System.lineSeparator());
         }
