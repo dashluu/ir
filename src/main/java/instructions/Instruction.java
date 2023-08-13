@@ -1,27 +1,25 @@
 package instructions;
 
 import cfg.BasicBlock;
+import structs.IRFunction;
 import structs.IRStruct;
+import structs.IRStructType;
 
 // A class whose instances represent IR instructions
 public abstract class Instruction {
-    protected final long id;
     protected final InstrType instrType;
     protected final Opcode opcode;
+    // Label for the instruction(used when dumping in binary)
+    protected long label;
     // The basic block that stores this instruction
     protected BasicBlock block;
     protected IRStruct container;
     protected Instruction nextInstr;
     protected Instruction prevInstr;
 
-    public Instruction(long id, InstrType instrType, Opcode opcode) {
-        this.id = id;
+    public Instruction(InstrType instrType, Opcode opcode) {
         this.instrType = instrType;
         this.opcode = opcode;
-    }
-
-    public long getId() {
-        return id;
     }
 
     public InstrType getInstrType() {
@@ -30,6 +28,14 @@ public abstract class Instruction {
 
     public Opcode getOpcode() {
         return opcode;
+    }
+
+    public long getLabel() {
+        return label;
+    }
+
+    public void setLabel(long label) {
+        this.label = label;
     }
 
     public BasicBlock getBlock() {
@@ -82,10 +88,10 @@ public abstract class Instruction {
         // Update the instruction's container
         container = instr.getContainer();
         if (instr == container.getHeadInstr()) {
-            container.setHeadInstr(instr);
+            container.setHeadInstr(this);
         }
         if (instr == container.getTailInstr()) {
-            container.setTailInstr(instr);
+            container.setTailInstr(this);
         }
 
         // Update the previous and next instruction
@@ -97,6 +103,20 @@ public abstract class Instruction {
         if (nextInstr != null) {
             nextInstr.setPrevInstr(this);
         }
+    }
+
+    /**
+     * Gets the function that the instruction is in.
+     *
+     * @return an IRFunction object corresponding to the function if it exists and null otherwise.
+     */
+    public IRFunction getFunction() {
+        IRStruct struct;
+        for (struct = container;
+             struct != null && struct.getStructType() != IRStructType.FUNCTION;
+             struct = struct.getParent())
+            ;
+        return (IRFunction) struct;
     }
 
     public abstract void accept(IInstrVisitor instrVisitor);
