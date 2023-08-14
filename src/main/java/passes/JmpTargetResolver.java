@@ -32,62 +32,52 @@ public class JmpTargetResolver implements ICFGVisitor {
 
     @Override
     public void visitJmpInstr(JmpInstr jmpInstr) {
-    }
-
-    @Override
-    public void visitBreakInstr(BreakInstr breakInstr) {
-        Opcode opcode = breakInstr.getOpcode();
-        Instruction instr, targetHeadInstr;
+        Opcode opcode = jmpInstr.getOpcode();
         IRStruct struct;
 
         switch (opcode) {
-            case BREAK_LOOP -> {
-                for (struct = breakInstr.getContainer();
+            case JMP_OVER_FUN -> {
+                for (struct = jmpInstr.getNextInstr().getContainer();
+                     struct.getStructType() != IRStructType.FUNCTION;
+                     struct = struct.getParent())
+                    ;
+                Instruction targetInstr = struct.getTailInstr().getNextInstr();
+                jmpInstr.setTargetInstr(targetInstr);
+            }
+            case JMP_TO_LOOP -> {
+                for (struct = jmpInstr.getContainer();
                      struct.getStructType() != IRStructType.LOOP;
                      struct = struct.getParent())
                     ;
-                targetHeadInstr = struct.getTailInstr().getNextInstr();
-                instr = new JmpInstr(Opcode.JMP, targetHeadInstr);
+                Instruction targetInstr = struct.getHeadInstr();
+                jmpInstr.setTargetInstr(targetInstr);
             }
-            case BREAK_IF_ELSE -> {
-                for (struct = breakInstr.getContainer();
+            case JMP_OUT_LOOP, JMP_LOOP_FALSE -> {
+                for (struct = jmpInstr.getContainer();
+                     struct.getStructType() != IRStructType.LOOP;
+                     struct = struct.getParent())
+                    ;
+                Instruction targetInstr = struct.getTailInstr().getNextInstr();
+                jmpInstr.setTargetInstr(targetInstr);
+            }
+            case JMP_OUT_IF_ELSE -> {
+                for (struct = jmpInstr.getContainer();
                      struct.getStructType() != IRStructType.IF_ELSE;
                      struct = struct.getParent())
                     ;
-                targetHeadInstr = struct.getTailInstr().getNextInstr();
-                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetHeadInstr);
-            }
-            case BREAK_LOOP_FALSE -> {
-                for (struct = breakInstr.getContainer();
-                     struct.getStructType() != IRStructType.LOOP;
-                     struct = struct.getParent())
-                    ;
-                targetHeadInstr = struct.getTailInstr().getNextInstr();
-                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetHeadInstr);
+                Instruction targetInstr = struct.getTailInstr().getNextInstr();
+                jmpInstr.setTargetInstr(targetInstr);
             }
             default -> {
-                for (struct = breakInstr.getContainer();
+                // JMP_IF_FALSE
+                for (struct = jmpInstr.getContainer();
                      struct.getStructType() != IRStructType.IF;
                      struct = struct.getParent())
                     ;
-                targetHeadInstr = struct.getTailInstr().getNextInstr();
-                instr = new JmpInstr(Opcode.JMP_IF_FALSE, targetHeadInstr);
+                Instruction targetInstr = struct.getTailInstr().getNextInstr();
+                jmpInstr.setTargetInstr(targetInstr);
             }
         }
-
-        instr.replaceInstr(breakInstr);
-    }
-
-    @Override
-    public void visitContInstr(ContInstr contInstr) {
-        IRStruct struct;
-        for (struct = contInstr.getContainer();
-             struct.getStructType() != IRStructType.LOOP;
-             struct = struct.getParent())
-            ;
-        Instruction targetHeadInstr = struct.getHeadInstr();
-        Instruction instr = new JmpInstr(Opcode.JMP, targetHeadInstr);
-        instr.replaceInstr(contInstr);
     }
 
     @Override

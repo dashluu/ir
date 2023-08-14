@@ -39,10 +39,12 @@ public class IRGenMain {
             ASTNode moduleNode = moduleResult.getData();
             BasicBlockBuilder blockBuilder = new BasicBlockBuilder();
             JmpTargetResolver jmpTargetResolver = new JmpTargetResolver();
+            CFGBuilder cfgBuilder = new CFGBuilder();
             IRContext irContext = IRContext.createContext();
 
             blockBuilder.run(moduleNode, irContext);
             jmpTargetResolver.run(irContext);
+            cfgBuilder.run(irContext);
             CFG cfg = irContext.getCfg();
             cfg.out(cfgWriter);
         } catch (SyntaxErr | IOException e) {

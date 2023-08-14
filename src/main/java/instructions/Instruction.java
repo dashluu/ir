@@ -1,9 +1,7 @@
 package instructions;
 
 import cfg.BasicBlock;
-import structs.IRFunction;
 import structs.IRStruct;
-import structs.IRStructType;
 
 // A class whose instances represent IR instructions
 public abstract class Instruction {
@@ -68,55 +66,6 @@ public abstract class Instruction {
 
     public void setPrevInstr(Instruction prevInstr) {
         this.prevInstr = prevInstr;
-    }
-
-    /**
-     * Replaces the given instruction with the caller instruction.
-     *
-     * @param instr the instruction to be replaced.
-     */
-    public void replaceInstr(Instruction instr) {
-        // Update the instruction's basic block
-        block = instr.getBlock();
-        if (instr == block.getHeadInstr()) {
-            block.setHeadInstr(this);
-        }
-        if (instr == block.getTailInstr()) {
-            block.setTailInstr(this);
-        }
-
-        // Update the instruction's container
-        container = instr.getContainer();
-        if (instr == container.getHeadInstr()) {
-            container.setHeadInstr(this);
-        }
-        if (instr == container.getTailInstr()) {
-            container.setTailInstr(this);
-        }
-
-        // Update the previous and next instruction
-        prevInstr = instr.getPrevInstr();
-        nextInstr = instr.getNextInstr();
-        if (prevInstr != null) {
-            prevInstr.setNextInstr(this);
-        }
-        if (nextInstr != null) {
-            nextInstr.setPrevInstr(this);
-        }
-    }
-
-    /**
-     * Gets the function that the instruction is in.
-     *
-     * @return an IRFunction object corresponding to the function if it exists and null otherwise.
-     */
-    public IRFunction getFunction() {
-        IRStruct struct;
-        for (struct = container;
-             struct != null && struct.getStructType() != IRStructType.FUNCTION;
-             struct = struct.getParent())
-            ;
-        return (IRFunction) struct;
     }
 
     public abstract void accept(IInstrVisitor instrVisitor);

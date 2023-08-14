@@ -9,10 +9,6 @@ public interface IInstrVisitor {
 
     void visitJmpInstr(JmpInstr jmpInstr);
 
-    void visitBreakInstr(BreakInstr breakInstr);
-
-    void visitContInstr(ContInstr contInstr);
-
     void visitRetInstr(RetInstr retInstr);
 
     void visitLoadInstr(LoadInstr loadInstr);
