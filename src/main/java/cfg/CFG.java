@@ -87,6 +87,13 @@ public class CFG implements Iterable<BasicBlock> {
      */
     public void out(Writer writer) throws IOException {
         StringBuilder strBuff = new StringBuilder();
+        long instrLabel = 0;
+
+        for (BasicBlock block : this) {
+            for (Instruction instr : block) {
+                instr.setLabel(instrLabel++);
+            }
+        }
 
         for (BasicBlock block : this) {
             strBuff.append("block ").append(block.getId()).append(":").append(System.lineSeparator());
